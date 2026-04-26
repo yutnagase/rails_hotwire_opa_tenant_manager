@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Tenant Manager" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body style="font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+    <header style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <h1 style="font-size: 1.2rem; margin: 0;">
+        <%= link_to "Tenant Manager", root_path, style: "text-decoration: none; color: inherit;" %>
+      </h1>
+      <% if user_signed_in? %>
+        <span style="font-size: 0.85rem;">
+          <%= current_user.name %> (<%= current_user.role %>)
+          | <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete } %>
+        </span>
+      <% end %>
+    </header>
+    <% if notice %><p style="color: green;"><%= notice %></p><% end %>
+    <% if alert %><p style="color: red;"><%= alert %></p><% end %>
+    <%= yield %>
+  </body>
+</html>

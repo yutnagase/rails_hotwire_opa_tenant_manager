@@ -1,0 +1,26 @@
+<h2>Projects</h2>
+
+<% if @projects.any? %>
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="border-bottom: 2px solid #333;">
+        <th style="text-align: left; padding: 8px;">Name</th>
+        <th style="text-align: right; padding: 8px;">Tasks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @projects.each do |project| %>
+        <tr style="border-bottom: 1px solid #ddd;">
+          <td style="padding: 8px;">
+            <%= link_to project.name, project_tasks_path(project) %>
+          </td>
+          <td style="text-align: right; padding: 8px;">
+            <%= project.tasks.count %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No projects yet.</p>
+<% end %>

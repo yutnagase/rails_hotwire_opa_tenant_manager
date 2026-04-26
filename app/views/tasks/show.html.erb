@@ -1,0 +1,23 @@
+<h2><%= @task.name %></h2>
+<p><%= link_to "← Back to Tasks", project_tasks_path(@project) %></p>
+
+<dl style="line-height: 2;">
+  <dt><strong>Project</strong></dt>
+  <dd><%= @project.name %></dd>
+
+  <dt><strong>Assignee</strong></dt>
+  <dd><%= @task.user&.name || "Unassigned" %></dd>
+
+  <dt><strong>Status</strong></dt>
+  <dd>
+    <%= turbo_frame_tag "task_status" do %>
+      <%= form_with model: [@project, @task], method: :patch do |f| %>
+        <%= f.select :status,
+              Task::STATUSES.map { |s| [s.capitalize, s] },
+              {},
+              onchange: "this.form.requestSubmit()",
+              style: "padding: 4px;" %>
+      <% end %>
+    <% end %>
+  </dd>
+</dl>

@@ -1,0 +1,27 @@
+# RLS対応設計:
+#   全環境で postgres（スーパーユーザー/BYPASSRLS）で接続。
+#   アプリ実行時は around_action 内で SET ROLE rails_user（NOBYPASSRLS）に切り替え、
+#   リクエスト終了時に RESET ROLE でスーパーユーザーに戻す。
+#   これにより、マイグレーションはスーパーユーザー権限で実行でき、
+#   アプリ実行時はRLSが正しく効く。
+
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("DB_HOST", "db") %>
+  port: <%= ENV.fetch("DB_PORT", 5432) %>
+  username: <%= ENV.fetch("DB_SUPERUSER", "postgres") %>
+  password: <%= ENV.fetch("DB_SUPERUSER_PASSWORD", "password") %>
+
+development:
+  <<: *default
+  database: tenant_manager_development
+
+test:
+  <<: *default
+  database: tenant_manager_test
+
+production:
+  <<: *default
+  database: tenant_manager_production

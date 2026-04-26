@@ -1,0 +1,9 @@
+<%= turbo_frame_tag "task_status" do %>
+  <%= form_with model: [project, task], method: :patch do |f| %>
+    <%= f.select :status,
+          Task::STATUSES.map { |s| [s.capitalize, s] },
+          {},
+          onchange: "this.form.requestSubmit()",
+          style: "padding: 4px;" %>
+  <% end %>
+<% end %>

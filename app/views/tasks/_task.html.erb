@@ -1,0 +1,19 @@
+<%= turbo_frame_tag dom_id(task) do %>
+  <tr style="border-bottom: 1px solid #ddd;">
+    <td style="padding: 8px;">
+      <%= link_to task.name, project_task_path(project, task), data: { turbo_frame: "_top" } %>
+    </td>
+    <td style="padding: 8px;">
+      <%= task.user&.name || "Unassigned" %>
+    </td>
+    <td style="padding: 8px;">
+      <%= form_with model: [project, task], method: :patch do |f| %>
+        <%= f.select :status,
+              Task::STATUSES.map { |s| [s.capitalize, s] },
+              {},
+              onchange: "this.form.requestSubmit()",
+              style: "padding: 4px;" %>
+      <% end %>
+    </td>
+  </tr>
+<% end %>
