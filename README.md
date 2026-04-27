@@ -65,7 +65,7 @@ PostgreSQL (Row Level Security enabled)
 | Role-based authorization | OPA (admin / member / guest)            |
 | DB-layer isolation       | PostgreSQL RLS with `SET ROLE`          |
 
-> For deeper design details, see [docs/design.md](docs/design.md).
+> For detailed documentation, see the [docs/](docs/README.md) directory.
 
 ---
 
@@ -194,4 +194,4 @@ This project is a **learning and portfolio-oriented technical demo**.
 
 ## License
 
-MIT License
+[MIT License](LICENSE)

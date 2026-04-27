@@ -157,146 +157,24 @@ Target models: `User`, `Project`, `Task`
 
 ## 6. PostgreSQL RLS (Row Level Security) Design
 
-> For a detailed explanation of RLS concepts and implementation, see [docs/rls.md](rls.md).
-
-### 6.1 Design Philosophy
-
 In addition to application-layer isolation via acts_as_tenant, RLS provides defense in depth at the database layer. Even if a bug exists in the application-layer scoping, the database prevents access to other tenants' data.
 
-### 6.2 Database Role Design
+- DB connects as `postgres` (superuser, BYPASSRLS) by default
+- During requests, switches to `rails_user` (NOBYPASSRLS) via `SET ROLE`
+- RLS policies enforce `tenant_id = current_setting('app.current_tenant_id')` on all tenant-scoped tables
+- `schema_migrations` and `ar_internal_metadata` are excluded from RLS
 
-| User                        | Purpose                                    | Privilege   |
-| --------------------------- | ------------------------------------------ | ----------- |
-| postgres (superuser)        | Migration execution, default DB connection | BYPASSRLS   |
-| rails_user (regular user)   | Request processing at runtime              | NOBYPASSRLS |
-
-### 6.3 Role Switching Strategy
-
-`database.yml` always connects as postgres (superuser). During request processing, the role is dynamically switched within an `around_action`:
-
-```ruby
-# At request start
-conn.execute("SET ROLE rails_user")
-conn.execute("SET app.current_tenant_id = '#{tenant.id}'")
-
-# At request end (ensure)
-conn.execute("RESET ROLE")
-conn.execute("RESET app.current_tenant_id")
-```
-
-This approach ensures:
-
-- Migrations run with superuser privileges
-- RLS is correctly applied during application execution
-- The ensure block guarantees the role is always reset
-
-### 6.4 RLS Policies
-
-`users`, `projects`, `tasks` tables:
-
-```sql
-CREATE POLICY {table}_tenant_isolation ON {table}
-  FOR ALL
-  USING (tenant_id = current_setting('app.current_tenant_id')::bigint);
-```
-
-`tenants` table:
-
-```sql
-CREATE POLICY tenants_isolation ON tenants
-  FOR ALL
-  USING (id = current_setting('app.current_tenant_id')::bigint);
-```
-
-### 6.5 Tables Excluded from RLS
-
-`schema_migrations`, `ar_internal_metadata` — These are required for migration execution and are not subject to RLS.
-
-### 6.6 Migration Order
-
-1. `CreateTenants` — Create tenants table
-2. `CreateUsers` — Create users table
-3. `CreateProjects` — Create projects table
-4. `CreateTasks` — Create tasks table
-5. `CreateRlsRole` — Create rails_user role + GRANT permissions
-6. `EnableRlsPolicies` — Enable RLS on all tables + create policies
+> For a detailed explanation of RLS concepts, policies, and implementation, see [rls.md](rls.md).
 
 ---
 
 ## 7. OPA Authorization Design
 
-> For a detailed explanation of OPA concepts and implementation, see [docs/opa.md](opa.md).
+OPA handles **vertical access control** — role-based permissions within a tenant — while RLS and acts_as_tenant handle horizontal isolation between tenants.
 
-### 7.1 Separation of Concerns
-
-| Layer                | Responsibility                                            |
-| -------------------- | --------------------------------------------------------- |
-| acts_as_tenant + RLS | **Horizontal control** — Data isolation between tenants   |
-| OPA                  | **Vertical control** — Role-based access within a tenant  |
-
-### 7.2 OPA Service Configuration
-
-OPA runs as a Docker container, serving policies mounted from `opa/policy/authz.rego`.
-
-```
-OPA_URL: http://opa:8181/v1/data/authz/allow
-```
-
-### 7.3 Request / Response
-
-Rails → OPA request:
-
-```json
-{
-  "input": {
-    "user": { "role": "member" },
-    "action": "read",
-    "resource": "task"
-  }
-}
-```
-
-OPA → Rails response:
-
-```json
-{ "result": true }
-```
-
-### 7.4 Action Mapping
-
-`ApplicationController#opa_action_for` maps Rails actions to OPA actions:
-
-| Rails action | OPA action |
-| ------------ | ---------- |
-| index, show  | read       |
-| new, create  | create     |
-| edit, update | update     |
-| destroy      | delete     |
-
-### 7.5 Rego Policy
-
-```rego
-package authz
-
-default allow = false
-
-# admin: full access to all operations
-allow if input.user.role == "admin"
-
-# member: read, create, and update
-allow if {
-    input.user.role == "member"
-    input.action in ["read", "create", "update"]
-}
-
-# guest: read only
-allow if {
-    input.user.role == "guest"
-    input.action == "read"
-}
-```
-
-### 7.6 Permission Matrix
+- OPA runs as a Docker container, evaluating Rego policies at `http://opa:8181/v1/data/authz/allow`
+- `ApplicationController` calls OPA on every request via `before_action :authorize_with_opa`
+- Fail-safe design: access is denied if OPA is unreachable
 
 | Role \ Action | read | create | update | delete |
 | ------------- | ---- | ------ | ------ | ------ |
@@ -304,57 +182,20 @@ allow if {
 | member        | ✅   | ✅     | ✅     | ❌     |
 | guest         | ✅   | ❌     | ❌     | ❌     |
 
-### 7.7 OpaClient
-
-`app/services/opa_client.rb` — A service class responsible for HTTP requests to OPA.
-
-- Synchronous requests via `Net::HTTP.post`
-- Fail-safe design: returns `false` (deny) on communication failure
-- Error tracking via log output
+> For a detailed explanation of OPA concepts, Rego policies, and integration, see [opa.md](opa.md).
 
 ---
 
 ## 8. Authentication Design
 
-### 8.1 Auth0 Integration
+OAuth2 authentication via Devise + omniauth-auth0, designed for Auth0 Organizations.
 
-OAuth2 authentication via Devise + omniauth-auth0. Designed for Auth0 Organizations.
+- Auth0 handles all credential verification — no passwords are stored in the application
+- Users are automatically created on first login with the `member` role
+- Subdomain is used to scope users to the correct tenant during the callback
+- In development, a fallback auto-signs in the first tenant user when Auth0 is not configured
 
-- Callback path: `/auth/auth0/callback`
-- Scopes: `openid profile email`
-- Session management: Server-side (Devise default)
-
-### 8.2 Authentication Flow
-
-```
-1. User → Auth0 login page
-2. Auth0 → Redirects to /auth/auth0/callback
-3. OmniauthCallbacksController#auth0
-   ├─ Resolves tenant from subdomain
-   └─ Finds or creates user via User.from_omniauth
-4. sign_in_and_redirect establishes the session
-```
-
-### 8.3 Automatic User Creation
-
-`User.from_omniauth(auth, tenant)` — Searches for a user within the tenant during the Auth0 callback. If not found, automatically creates one with `role: "member"`.
-
-### 8.4 Development Environment Fallback Authentication
-
-As a development fallback when Auth0 is not connected, `ApplicationController#authenticate_user!` automatically signs in the first user in the tenant. This is intended to be removed for production.
-
-### 8.5 Routing
-
-```ruby
-devise_for :users,
-  controllers: {
-    omniauth_callbacks: "users/omniauth_callbacks",
-    sessions: "users/sessions"
-  },
-  skip: [:registrations, :passwords, :confirmations]
-```
-
-registrations / passwords / confirmations are skipped because they are managed on the Auth0 side.
+> For a detailed explanation of the Auth0 flow, Devise configuration, and multi-tenant authentication, see [auth0.md](auth0.md).
 
 ---
 
@@ -456,9 +297,12 @@ rails_hotwire_opa_tenant_manager/
 │   ├── schema.rb
 │   └── seeds.rb            # Development seed data
 ├── docs/
+│   ├── README.md           # Documentation index
 │   ├── design.md           # This design document
 │   ├── rls.md              # RLS detailed documentation
-│   └── opa.md              # OPA detailed documentation
+│   ├── opa.md              # OPA detailed documentation
+│   ├── auth0.md            # Auth0 authentication documentation
+│   └── images/             # Architecture and flow diagrams
 └── opa/
     └── policy/
         └── authz.rego      # OPA authorization policy
