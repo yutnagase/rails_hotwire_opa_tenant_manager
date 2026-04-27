@@ -1,64 +1,64 @@
-# 設計書：Rails Hotwire × acts_as_tenant × OPA マルチテナントタスク管理アプリ
+# Design Document: Rails Hotwire × acts_as_tenant × OPA Multi-Tenant Task Management App
 
-## 1. プロジェクト概要
+## 1. Project Overview
 
-B2B向けプロジェクト・タスク管理ツール。  
-セキュリティ（マルチテナント分離・RLS・OPA認可）と Hotwire によるモダンUXに特化したMVP。
+A B2B project and task management tool.  
+An MVP focused on security (multi-tenant isolation, RLS, OPA authorization) and a modern UX powered by Hotwire.
 
-### 画面構成（3画面）
+### Screen Structure (3 Screens)
 
-| #   | 画面             | パス                              | 説明                                 |
-| --- | ---------------- | --------------------------------- | ------------------------------------ |
-| 1   | プロジェクト一覧 | `/projects` (root)                | テナント内の全プロジェクトを一覧表示 |
-| 2   | タスク一覧       | `/projects/:project_id/tasks`     | プロジェクト配下のタスクを一覧表示   |
-| 3   | タスク詳細       | `/projects/:project_id/tasks/:id` | タスクの詳細表示・ステータス変更     |
-
----
-
-## 2. 技術スタック
-
-| カテゴリ               | 技術                                 | バージョン/詳細                      |
-| ---------------------- | ------------------------------------ | ------------------------------------ |
-| 言語                   | Ruby                                 | 3.4.9                                |
-| フレームワーク         | Ruby on Rails                        | 8.1.3                                |
-| DB                     | PostgreSQL                           | 17                                   |
-| フロントエンド         | Hotwire (Turbo Drive / Turbo Frames) | importmap経由                        |
-| アセットパイプライン   | Propshaft                            | -                                    |
-| 認証                   | Devise + omniauth-auth0              | Auth0 Organizations想定              |
-| 認可                   | Open Policy Agent (OPA)              | Dockerコンテナで稼働                 |
-| マルチテナント         | acts_as_tenant                       | アプリ層スコープ制御                 |
-| DB行レベルセキュリティ | PostgreSQL RLS                       | DB層での多重防御                     |
-| JWT                    | ruby-jwt                             | トークン検証用                       |
-| テスト高速化           | test-prof                            | 認可テスト向け                       |
-| CI                     | GitHub Actions                       | Brakeman / importmap audit / RuboCop |
+| #   | Screen       | Path                              | Description                              |
+| --- | ------------ | --------------------------------- | ---------------------------------------- |
+| 1   | Project list | `/projects` (root)                | Lists all projects within the tenant     |
+| 2   | Task list    | `/projects/:project_id/tasks`     | Lists tasks under a project              |
+| 3   | Task detail  | `/projects/:project_id/tasks/:id` | Task detail view and status update       |
 
 ---
 
-## 3. アーキテクチャ
+## 2. Technology Stack
 
-### 3.1 全体構成
-
-![architecture.png](architecture.png)
-
-### 3.2 DevContainer構成
-
-`docker-compose.yml` で3サービスを起動：
-
-| サービス | イメージ                      | ポート | 役割                  |
-| -------- | ----------------------------- | ------ | --------------------- |
-| app      | ruby:3.4 (カスタムDockerfile) | 8080   | Railsアプリケーション |
-| db       | postgres:17                   | 5432   | データベース          |
-| opa      | openpolicyagent/opa:latest    | 8181   | ポリシーエンジン      |
-
-### 3.3 リクエストフロー
-
-![リクエストフロー図](request_flow.png)
+| Category              | Technology                           | Version / Details                    |
+| --------------------- | ------------------------------------ | ------------------------------------ |
+| Language              | Ruby                                 | 3.4.9                                |
+| Framework             | Ruby on Rails                        | 8.1.3                                |
+| Database              | PostgreSQL                           | 17                                   |
+| Frontend              | Hotwire (Turbo Drive / Turbo Frames) | Via importmap                        |
+| Asset pipeline        | Propshaft                            | -                                    |
+| Authentication        | Devise + omniauth-auth0              | Designed for Auth0 Organizations     |
+| Authorization         | Open Policy Agent (OPA)              | Runs as a Docker container           |
+| Multi-tenancy         | acts_as_tenant                       | Application-layer scope control      |
+| DB row-level security | PostgreSQL RLS                       | Defense in depth at the DB layer     |
+| JWT                   | ruby-jwt                             | Token verification                   |
+| Test acceleration     | test-prof                            | For authorization tests              |
+| CI                    | GitHub Actions                       | Brakeman / importmap audit / RuboCop |
 
 ---
 
-## 4. データベース設計
+## 3. Architecture
 
-### 4.1 ER図
+### 3.1 Overall Structure
+
+![architecture.png](images/architecture.png)
+
+### 3.2 DevContainer Configuration
+
+Three services are started via `docker-compose.yml`:
+
+| Service | Image                         | Port | Role                  |
+| ------- | ----------------------------- | ---- | --------------------- |
+| app     | ruby:3.4 (custom Dockerfile)  | 8080 | Rails application     |
+| db      | postgres:17                   | 5432 | Database              |
+| opa     | openpolicyagent/opa:latest    | 8181 | Policy engine         |
+
+### 3.3 Request Flow
+
+![Request flow diagram](images/request_flow.png)
+
+---
+
+## 4. Database Design
+
+### 4.1 ER Diagram
 
 ```
 tenants 1──* users
@@ -68,129 +68,131 @@ projects 1──* tasks
 users 1──* tasks (optional)
 ```
 
-### 4.2 テーブル定義
+### 4.2 Table Definitions
 
 #### tenants
 
-| カラム     | 型       | 制約             | 説明               |
-| ---------- | -------- | ---------------- | ------------------ |
-| id         | bigint   | PK               |                    |
-| name       | string   | NOT NULL         | テナント名         |
-| subdomain  | string   | NOT NULL, UNIQUE | サブドメイン識別子 |
-| created_at | datetime | NOT NULL         |                    |
-| updated_at | datetime | NOT NULL         |                    |
+| Column     | Type     | Constraints      | Description          |
+| ---------- | -------- | ---------------- | -------------------- |
+| id         | bigint   | PK               |                      |
+| name       | string   | NOT NULL         | Tenant name          |
+| subdomain  | string   | NOT NULL, UNIQUE | Subdomain identifier |
+| created_at | datetime | NOT NULL         |                      |
+| updated_at | datetime | NOT NULL         |                      |
 
 #### users
 
-| カラム     | 型       | 制約                       | 説明            |
+| Column     | Type     | Constraints                | Description     |
 | ---------- | -------- | -------------------------- | --------------- |
 | id         | bigint   | PK                         |                 |
-| tenant_id  | bigint   | NOT NULL, FK(tenants)      | 所属テナント    |
-| auth0_uid  | string   | NOT NULL, UNIQUE           | Auth0ユーザーID |
-| name       | string   | NOT NULL                   | 表示名          |
-| email      | string   | NOT NULL                   | メールアドレス  |
-| role       | string   | NOT NULL, DEFAULT 'member' | 権限ロール      |
+| tenant_id  | bigint   | NOT NULL, FK(tenants)      | Owning tenant   |
+| auth0_uid  | string   | NOT NULL, UNIQUE           | Auth0 user ID   |
+| name       | string   | NOT NULL                   | Display name    |
+| email      | string   | NOT NULL                   | Email address   |
+| role       | string   | NOT NULL, DEFAULT 'member' | Permission role |
 | created_at | datetime | NOT NULL                   |                 |
 | updated_at | datetime | NOT NULL                   |                 |
 
-role の種別：
+Role types:
 
-| role   | 説明                            |
-| ------ | ------------------------------- |
-| admin  | 管理者 — 全操作可能             |
-| member | 一般社員 — 読み取り・作成・更新 |
-| guest  | 外部スタッフ — 読み取りのみ     |
+| Role   | Description                              |
+| ------ | ---------------------------------------- |
+| admin  | Administrator — full access              |
+| member | Regular employee — read, create, update  |
+| guest  | External collaborator — read only        |
 
 #### projects
 
-| カラム     | 型       | 制約                  | 説明           |
-| ---------- | -------- | --------------------- | -------------- |
-| id         | bigint   | PK                    |                |
-| tenant_id  | bigint   | NOT NULL, FK(tenants) | 所属テナント   |
-| name       | string   | NOT NULL              | プロジェクト名 |
-| created_at | datetime | NOT NULL              |                |
-| updated_at | datetime | NOT NULL              |                |
+| Column     | Type     | Constraints           | Description  |
+| ---------- | -------- | --------------------- | ------------ |
+| id         | bigint   | PK                    |              |
+| tenant_id  | bigint   | NOT NULL, FK(tenants) | Owning tenant |
+| name       | string   | NOT NULL              | Project name |
+| created_at | datetime | NOT NULL              |              |
+| updated_at | datetime | NOT NULL              |              |
 
 #### tasks
 
-| カラム     | 型       | 制約                     | 説明               |
-| ---------- | -------- | ------------------------ | ------------------ |
-| id         | bigint   | PK                       |                    |
-| tenant_id  | bigint   | NOT NULL, FK(tenants)    | 所属テナント       |
-| project_id | bigint   | NOT NULL, FK(projects)   | 所属プロジェクト   |
-| user_id    | bigint   | FK(users), nullable      | 担当者（未割当可） |
-| name       | string   | NOT NULL                 | タスク名           |
-| status     | string   | NOT NULL, DEFAULT 'todo' | ステータス         |
-| created_at | datetime | NOT NULL                 |                    |
-| updated_at | datetime | NOT NULL                 |                    |
+| Column     | Type     | Constraints              | Description                  |
+| ---------- | -------- | ------------------------ | ---------------------------- |
+| id         | bigint   | PK                       |                              |
+| tenant_id  | bigint   | NOT NULL, FK(tenants)    | Owning tenant                |
+| project_id | bigint   | NOT NULL, FK(projects)   | Owning project               |
+| user_id    | bigint   | FK(users), nullable      | Assignee (can be unassigned) |
+| name       | string   | NOT NULL                 | Task name                    |
+| status     | string   | NOT NULL, DEFAULT 'todo' | Status                       |
+| created_at | datetime | NOT NULL                 |                              |
+| updated_at | datetime | NOT NULL                 |                              |
 
-status の種別：`todo` / `doing` / `done`
-
----
-
-## 5. マルチテナント設計
-
-### 5.1 テナント分離方式
-
-**カラム分離方式** — 全テーブルに `tenant_id` カラムを持たせ、アプリ層とDB層の二重で分離を実現。
-
-### 5.2 テナント識別
-
-サブドメイン方式を採用。リクエストの `request.subdomain` からテナントを特定する。
-
-- ローカル: `company-a.localhost:8080`
-- `config.action_dispatch.tld_length = 0` を development 環境で設定し、localhost でサブドメインを認識可能にしている
-
-### 5.3 acts_as_tenant（アプリ層）
-
-`ApplicationController` で `set_current_tenant_through_filter` を宣言し、`around_action :scope_to_tenant` でリクエストごとにテナントをセット。
-
-各モデルで `acts_as_tenant :tenant` を宣言することで、Active Record のクエリに自動で `WHERE tenant_id = ?` が付与される。
-
-対象モデル：`User`, `Project`, `Task`
-
-### 5.4 テナントスコープの一時解除
-
-`db/seeds.rb` でのみ `ActsAsTenant.without_tenant` を使用してテナントスコープを外している。本番リクエストパスでは使用しない。
+Status types: `todo` / `doing` / `done`
 
 ---
 
-## 6. PostgreSQL RLS（行レベルセキュリティ）設計
+## 5. Multi-Tenant Design
 
-### 6.1 設計思想
+### 5.1 Tenant Isolation Strategy
 
-acts_as_tenant によるアプリ層の分離に加え、DB層でも RLS による多重防御を実施。万が一アプリ層のスコープ制御にバグがあっても、DB層で他テナントのデータへのアクセスを防止する。
+**Column-based isolation** — All tables include a `tenant_id` column, with dual isolation at both the application and database layers.
 
-### 6.2 ユーザー権限設計
+### 5.2 Tenant Identification
 
-| ユーザー                    | 用途                                     | 権限        |
-| --------------------------- | ---------------------------------------- | ----------- |
-| postgres (スーパーユーザー) | マイグレーション実行、DB接続のデフォルト | BYPASSRLS   |
-| rails_user (一般ユーザー)   | アプリ実行時のリクエスト処理             | NOBYPASSRLS |
+Subdomain-based identification is used. The tenant is resolved from `request.subdomain`.
 
-### 6.3 ROLE切り替え方式
+- Local: `company-a.localhost:8080`
+- `config.action_dispatch.tld_length = 0` is set in the development environment to enable subdomain recognition on localhost
 
-`database.yml` では常に postgres（スーパーユーザー）で接続。リクエスト処理時に `around_action` 内で動的に ROLE を切り替える：
+### 5.3 acts_as_tenant (Application Layer)
+
+`set_current_tenant_through_filter` is declared in `ApplicationController`, and `around_action :scope_to_tenant` sets the tenant on each request.
+
+Each model declares `acts_as_tenant :tenant`, which automatically appends `WHERE tenant_id = ?` to Active Record queries.
+
+Target models: `User`, `Project`, `Task`
+
+### 5.4 Temporarily Disabling Tenant Scope
+
+`ActsAsTenant.without_tenant` is used only in `db/seeds.rb` to bypass tenant scoping. It is never used in production request paths.
+
+---
+
+## 6. PostgreSQL RLS (Row Level Security) Design
+
+> For a detailed explanation of RLS concepts and implementation, see [docs/rls.md](rls.md).
+
+### 6.1 Design Philosophy
+
+In addition to application-layer isolation via acts_as_tenant, RLS provides defense in depth at the database layer. Even if a bug exists in the application-layer scoping, the database prevents access to other tenants' data.
+
+### 6.2 Database Role Design
+
+| User                        | Purpose                                    | Privilege   |
+| --------------------------- | ------------------------------------------ | ----------- |
+| postgres (superuser)        | Migration execution, default DB connection | BYPASSRLS   |
+| rails_user (regular user)   | Request processing at runtime              | NOBYPASSRLS |
+
+### 6.3 Role Switching Strategy
+
+`database.yml` always connects as postgres (superuser). During request processing, the role is dynamically switched within an `around_action`:
 
 ```ruby
-# リクエスト開始時
+# At request start
 conn.execute("SET ROLE rails_user")
 conn.execute("SET app.current_tenant_id = '#{tenant.id}'")
 
-# リクエスト終了時（ensure）
+# At request end (ensure)
 conn.execute("RESET ROLE")
 conn.execute("RESET app.current_tenant_id")
 ```
 
-この方式により：
+This approach ensures:
 
-- マイグレーションはスーパーユーザー権限で実行可能
-- アプリ実行時は RLS が正しく適用される
-- ensure ブロックで確実にROLEがリセットされる
+- Migrations run with superuser privileges
+- RLS is correctly applied during application execution
+- The ensure block guarantees the role is always reset
 
-### 6.4 RLSポリシー
+### 6.4 RLS Policies
 
-`users`, `projects`, `tasks` テーブル：
+`users`, `projects`, `tasks` tables:
 
 ```sql
 CREATE POLICY {table}_tenant_isolation ON {table}
@@ -198,7 +200,7 @@ CREATE POLICY {table}_tenant_isolation ON {table}
   USING (tenant_id = current_setting('app.current_tenant_id')::bigint);
 ```
 
-`tenants` テーブル：
+`tenants` table:
 
 ```sql
 CREATE POLICY tenants_isolation ON tenants
@@ -206,41 +208,43 @@ CREATE POLICY tenants_isolation ON tenants
   USING (id = current_setting('app.current_tenant_id')::bigint);
 ```
 
-### 6.5 RLS対象外テーブル
+### 6.5 Tables Excluded from RLS
 
-`schema_migrations`, `ar_internal_metadata` — マイグレーション実行に必要なため、RLSを適用しない。
+`schema_migrations`, `ar_internal_metadata` — These are required for migration execution and are not subject to RLS.
 
-### 6.6 マイグレーション順序
+### 6.6 Migration Order
 
-1. `CreateTenants` — tenants テーブル作成
-2. `CreateUsers` — users テーブル作成
-3. `CreateProjects` — projects テーブル作成
-4. `CreateTasks` — tasks テーブル作成
-5. `CreateRlsRole` — rails_user ロール作成 + GRANT権限付与
-6. `EnableRlsPolicies` — 全テーブルに RLS 有効化 + ポリシー作成
+1. `CreateTenants` — Create tenants table
+2. `CreateUsers` — Create users table
+3. `CreateProjects` — Create projects table
+4. `CreateTasks` — Create tasks table
+5. `CreateRlsRole` — Create rails_user role + GRANT permissions
+6. `EnableRlsPolicies` — Enable RLS on all tables + create policies
 
 ---
 
-## 7. OPA認可設計
+## 7. OPA Authorization Design
 
-### 7.1 役割分担
+> For a detailed explanation of OPA concepts and implementation, see [docs/opa.md](opa.md).
 
-| レイヤー             | 責務                                                  |
-| -------------------- | ----------------------------------------------------- |
-| acts_as_tenant + RLS | **横の制御** — テナント間のデータ分離                 |
-| OPA                  | **縦の制御** — テナント内でのロールベースアクセス制御 |
+### 7.1 Separation of Concerns
 
-### 7.2 OPAサービス構成
+| Layer                | Responsibility                                            |
+| -------------------- | --------------------------------------------------------- |
+| acts_as_tenant + RLS | **Horizontal control** — Data isolation between tenants   |
+| OPA                  | **Vertical control** — Role-based access within a tenant  |
 
-OPA は Docker コンテナとして稼働し、`opa/policy/authz.rego` をマウントしてポリシーを提供。
+### 7.2 OPA Service Configuration
+
+OPA runs as a Docker container, serving policies mounted from `opa/policy/authz.rego`.
 
 ```
 OPA_URL: http://opa:8181/v1/data/authz/allow
 ```
 
-### 7.3 リクエスト/レスポンス
+### 7.3 Request / Response
 
-Rails → OPA へのリクエスト：
+Rails → OPA request:
 
 ```json
 {
@@ -252,15 +256,15 @@ Rails → OPA へのリクエスト：
 }
 ```
 
-OPA → Rails へのレスポンス：
+OPA → Rails response:
 
 ```json
 { "result": true }
 ```
 
-### 7.4 アクションマッピング
+### 7.4 Action Mapping
 
-`ApplicationController#opa_action_for` でRailsアクションをOPAアクションに変換：
+`ApplicationController#opa_action_for` maps Rails actions to OPA actions:
 
 | Rails action | OPA action |
 | ------------ | ---------- |
@@ -269,32 +273,32 @@ OPA → Rails へのレスポンス：
 | edit, update | update     |
 | destroy      | delete     |
 
-### 7.5 Regoポリシー
+### 7.5 Rego Policy
 
 ```rego
 package authz
 
 default allow = false
 
-# admin: 全操作可能
+# admin: full access to all operations
 allow if input.user.role == "admin"
 
-# member: 読み取り・作成・更新が可能
+# member: read, create, and update
 allow if {
     input.user.role == "member"
     input.action in ["read", "create", "update"]
 }
 
-# guest: 読み取りのみ
+# guest: read only
 allow if {
     input.user.role == "guest"
     input.action == "read"
 }
 ```
 
-### 7.6 権限マトリクス
+### 7.6 Permission Matrix
 
-| role \ action | read | create | update | delete |
+| Role \ Action | read | create | update | delete |
 | ------------- | ---- | ------ | ------ | ------ |
 | admin         | ✅   | ✅     | ✅     | ✅     |
 | member        | ✅   | ✅     | ✅     | ❌     |
@@ -302,44 +306,44 @@ allow if {
 
 ### 7.7 OpaClient
 
-`app/services/opa_client.rb` — OPAへのHTTPリクエストを担当するサービスクラス。
+`app/services/opa_client.rb` — A service class responsible for HTTP requests to OPA.
 
-- `Net::HTTP.post` で同期リクエスト
-- 通信失敗時は `false`（deny）を返すフェイルセーフ設計
-- ログ出力でエラー追跡可能
+- Synchronous requests via `Net::HTTP.post`
+- Fail-safe design: returns `false` (deny) on communication failure
+- Error tracking via log output
 
 ---
 
-## 8. 認証設計
+## 8. Authentication Design
 
-### 8.1 Auth0連携
+### 8.1 Auth0 Integration
 
-Devise + omniauth-auth0 によるOAuth2認証。Auth0のOrganizations機能を想定。
+OAuth2 authentication via Devise + omniauth-auth0. Designed for Auth0 Organizations.
 
-- コールバックパス: `/auth/auth0/callback`
-- スコープ: `openid profile email`
-- セッション管理: サーバーサイド（Devise標準）
+- Callback path: `/auth/auth0/callback`
+- Scopes: `openid profile email`
+- Session management: Server-side (Devise default)
 
-### 8.2 認証フロー
+### 8.2 Authentication Flow
 
 ```
-1. ユーザー → Auth0ログインページ
-2. Auth0 → /auth/auth0/callback にリダイレクト
+1. User → Auth0 login page
+2. Auth0 → Redirects to /auth/auth0/callback
 3. OmniauthCallbacksController#auth0
-   ├─ サブドメインからテナント特定
-   └─ User.from_omniauth でユーザー検索/作成
-4. sign_in_and_redirect でセッション確立
+   ├─ Resolves tenant from subdomain
+   └─ Finds or creates user via User.from_omniauth
+4. sign_in_and_redirect establishes the session
 ```
 
-### 8.3 ユーザー自動作成
+### 8.3 Automatic User Creation
 
-`User.from_omniauth(auth, tenant)` — Auth0コールバック時にテナント内でユーザーを検索し、存在しなければ `role: "member"` で自動作成。
+`User.from_omniauth(auth, tenant)` — Searches for a user within the tenant during the Auth0 callback. If not found, automatically creates one with `role: "member"`.
 
-### 8.4 開発環境の仮認証
+### 8.4 Development Environment Fallback Authentication
 
-Auth0未接続時の開発用として、`ApplicationController#authenticate_user!` にフォールバックを実装。テナントの最初のユーザーで自動ログインする。本番では削除予定。
+As a development fallback when Auth0 is not connected, `ApplicationController#authenticate_user!` automatically signs in the first user in the tenant. This is intended to be removed for production.
 
-### 8.5 ルーティング
+### 8.5 Routing
 
 ```ruby
 devise_for :users,
@@ -350,35 +354,35 @@ devise_for :users,
   skip: [:registrations, :passwords, :confirmations]
 ```
 
-registrations / passwords / confirmations は Auth0 側で管理するためスキップ。
+registrations / passwords / confirmations are skipped because they are managed on the Auth0 side.
 
 ---
 
-## 9. Hotwire活用設計
+## 9. Hotwire Design
 
 ### 9.1 Turbo Drive
 
-全画面遷移で Turbo Drive が有効。`<body>` の差し替えによりSPA風のサクサクした画面遷移を実現。importmap 経由で `@hotwired/turbo-rails` を読み込み。
+Turbo Drive is enabled for all page navigations. It replaces the `<body>` to achieve SPA-like smooth transitions. Loaded via importmap with `@hotwired/turbo-rails`.
 
 ### 9.2 Turbo Frames
 
-タスクのステータス変更で Turbo Frames を活用し、画面全体をリロードせずに部分更新を実現。
+Turbo Frames are used for task status updates, enabling partial page updates without full reloads.
 
-#### タスク一覧画面でのステータス変更
+#### Status Update on Task List
 
-各タスク行を `turbo_frame_tag dom_id(task)` で囲み、ステータスのセレクトボックス変更時に `requestSubmit()` でフォーム送信。サーバーは `_task.html.erb` パーシャルを返し、該当行のみ更新。
+Each task row is wrapped in `turbo_frame_tag dom_id(task)`. When the status select box changes, `requestSubmit()` submits the form. The server returns the `_task.html.erb` partial, updating only the affected row.
 
-#### タスク詳細画面でのステータス変更
+#### Status Update on Task Detail
 
-ステータス部分を `turbo_frame_tag "task_status"` で囲み、変更時にサーバーが `_task_status.html.erb` パーシャルを返す。`TasksController#update` で `turbo_frame_request_id` を判定し、適切なパーシャルを返却。
+The status section is wrapped in `turbo_frame_tag "task_status"`. On change, the server returns the `_task_status.html.erb` partial. `TasksController#update` checks `turbo_frame_request_id` to determine which partial to render.
 
 ### 9.3 Stimulus
 
-Stimulus コントローラーの基盤は設定済み（`app/javascript/controllers/`）。現時点ではカスタムコントローラーは未実装で、`onchange: "this.form.requestSubmit()"` によるインラインJSで対応。
+The Stimulus controller foundation is configured (`app/javascript/controllers/`). No custom controllers are implemented yet; status changes use inline JS (`onchange: "this.form.requestSubmit()"`).
 
 ---
 
-## 10. ルーティング
+## 10. Routing
 
 ```ruby
 root "projects#index"
@@ -388,25 +392,25 @@ resources :projects, only: [:index] do
 end
 ```
 
-| メソッド | パス                            | アクション     | 説明                 |
-| -------- | ------------------------------- | -------------- | -------------------- |
-| GET      | /projects                       | projects#index | プロジェクト一覧     |
-| GET      | /projects/:project_id/tasks     | tasks#index    | タスク一覧           |
-| GET      | /projects/:project_id/tasks/:id | tasks#show     | タスク詳細           |
-| PATCH    | /projects/:project_id/tasks/:id | tasks#update   | タスクステータス更新 |
+| Method | Path                            | Action         | Description          |
+| ------ | ------------------------------- | -------------- | -------------------- |
+| GET    | /projects                       | projects#index | Project list         |
+| GET    | /projects/:project_id/tasks     | tasks#index    | Task list            |
+| GET    | /projects/:project_id/tasks/:id | tasks#show     | Task detail          |
+| PATCH  | /projects/:project_id/tasks/:id | tasks#update   | Task status update   |
 
-MVPとして最小限のCRUDのみ公開。create / destroy は現時点でスコープ外。
+Only minimal CRUD is exposed for the MVP. create / destroy are currently out of scope.
 
 ---
 
-## 11. ディレクトリ構成
+## 11. Directory Structure
 
 ```
 rails_hotwire_opa_tenant_manager/
 ├── .devcontainer/
-│   ├── Dockerfile          # Ruby 3.4 + PostgreSQLクライアント
-│   ├── devcontainer.json   # VS Code DevContainer設定
-│   └── docker-compose.yml  # app / db / opa の3サービス
+│   ├── Dockerfile          # Ruby 3.4 + PostgreSQL client
+│   ├── devcontainer.json   # VS Code DevContainer configuration
+│   └── docker-compose.yml  # 3 services: app / db / opa
 ├── .github/
 │   └── workflows/
 │       └── ci.yml          # Brakeman / importmap audit / RuboCop
@@ -414,9 +418,9 @@ rails_hotwire_opa_tenant_manager/
 │   ├── controllers/
 │   │   ├── concerns/
 │   │   ├── users/
-│   │   │   ├── omniauth_callbacks_controller.rb  # Auth0コールバック
-│   │   │   └── sessions_controller.rb            # サインアウト
-│   │   ├── application_controller.rb  # テナント制御・認証・OPA認可
+│   │   │   ├── omniauth_callbacks_controller.rb  # Auth0 callback
+│   │   │   └── sessions_controller.rb            # Sign out
+│   │   ├── application_controller.rb  # Tenant control, auth, OPA authz
 │   │   ├── projects_controller.rb
 │   │   └── tasks_controller.rb
 │   ├── models/
@@ -425,21 +429,21 @@ rails_hotwire_opa_tenant_manager/
 │   │   ├── project.rb      # acts_as_tenant
 │   │   └── task.rb         # acts_as_tenant, belongs_to :project/:user
 │   ├── services/
-│   │   └── opa_client.rb   # OPA HTTP通信クライアント
+│   │   └── opa_client.rb   # OPA HTTP client
 │   └── views/
 │       ├── layouts/
 │       │   └── application.html.erb
 │       ├── projects/
 │       │   └── index.html.erb
 │       └── tasks/
-│           ├── _task.html.erb          # タスク行パーシャル (Turbo Frame)
-│           ├── _task_status.html.erb   # ステータスパーシャル (Turbo Frame)
+│           ├── _task.html.erb          # Task row partial (Turbo Frame)
+│           ├── _task_status.html.erb   # Status partial (Turbo Frame)
 │           ├── index.html.erb
 │           └── show.html.erb
 ├── config/
-│   ├── database.yml        # postgres(スーパーユーザー)で接続
+│   ├── database.yml        # Connects as postgres (superuser)
 │   ├── initializers/
-│   │   └── devise.rb       # Auth0 OmniAuth設定
+│   │   └── devise.rb       # Auth0 OmniAuth configuration
 │   └── routes.rb
 ├── db/
 │   ├── migrate/
@@ -447,91 +451,93 @@ rails_hotwire_opa_tenant_manager/
 │   │   ├── *_create_users.rb
 │   │   ├── *_create_projects.rb
 │   │   ├── *_create_tasks.rb
-│   │   ├── *_create_rls_role.rb        # rails_user ロール作成
-│   │   └── *_enable_rls_policies.rb    # RLS有効化・ポリシー作成
+│   │   ├── *_create_rls_role.rb        # rails_user role creation
+│   │   └── *_enable_rls_policies.rb    # RLS activation + policy creation
 │   ├── schema.rb
-│   └── seeds.rb            # 開発用シードデータ
+│   └── seeds.rb            # Development seed data
 ├── docs/
-│   └── design.md           # 本設計書
+│   ├── design.md           # This design document
+│   ├── rls.md              # RLS detailed documentation
+│   └── opa.md              # OPA detailed documentation
 └── opa/
     └── policy/
-        └── authz.rego      # OPA認可ポリシー
+        └── authz.rego      # OPA authorization policy
 ```
 
 ---
 
-## 12. セキュリティ設計まとめ
+## 12. Security Design Summary
 
-### 多層防御アーキテクチャ
+### Defense in Depth Architecture
 
 ```
-[Layer 1] サブドメインによるテナント識別
+[Layer 1] Tenant identification via subdomain
     ↓
-[Layer 2] Devise + Auth0 による認証
+[Layer 2] Authentication via Devise + Auth0
     ↓
-[Layer 3] acts_as_tenant によるアプリ層テナント分離
+[Layer 3] Application-layer tenant isolation via acts_as_tenant
     ↓
-[Layer 4] OPA によるロールベース認可
+[Layer 4] Role-based authorization via OPA
     ↓
-[Layer 5] PostgreSQL RLS によるDB層テナント分離
+[Layer 5] Database-layer tenant isolation via PostgreSQL RLS
 ```
 
-| レイヤー     | 防御対象                   | 実装                         |
-| ------------ | -------------------------- | ---------------------------- |
-| テナント識別 | 誤テナントアクセス         | サブドメイン → Tenant lookup |
-| 認証         | 未認証アクセス             | Devise + Auth0               |
-| アプリ層分離 | クロステナントクエリ       | acts_as_tenant (自動WHERE句) |
-| ロール認可   | 権限外操作                 | OPA (Rego ポリシー)          |
-| DB層分離     | アプリバグによるデータ漏洩 | PostgreSQL RLS               |
+| Layer                 | Protects Against                  | Implementation                       |
+| --------------------- | --------------------------------- | ------------------------------------ |
+| Tenant identification | Wrong tenant access               | Subdomain → Tenant lookup            |
+| Authentication        | Unauthenticated access            | Devise + Auth0                       |
+| App-layer isolation   | Cross-tenant queries              | acts_as_tenant (automatic WHERE)     |
+| Role authorization    | Unauthorized operations           | OPA (Rego policies)                  |
+| DB-layer isolation    | Data leaks from application bugs  | PostgreSQL RLS                       |
 
 ---
 
-## 13. 環境変数
+## 13. Environment Variables
 
-| 変数名                | デフォルト値                        | 説明                               |
-| --------------------- | ----------------------------------- | ---------------------------------- |
-| DB_HOST               | db                                  | PostgreSQLホスト                   |
-| DB_PORT               | 5432                                | PostgreSQLポート                   |
-| DB_SUPERUSER          | postgres                            | DB接続ユーザー（スーパーユーザー） |
-| DB_SUPERUSER_PASSWORD | password                            | DB接続パスワード                   |
-| RLS_ROLE              | rails_user                          | RLS適用ロール名                    |
-| RLS_ROLE_PASSWORD     | rails_password                      | RLSロールのパスワード              |
-| OPA_URL               | http://opa:8181/v1/data/authz/allow | OPAエンドポイント                  |
-| AUTH0_CLIENT_ID       | -                                   | Auth0クライアントID                |
-| AUTH0_CLIENT_SECRET   | -                                   | Auth0クライアントシークレット      |
-| AUTH0_DOMAIN          | -                                   | Auth0ドメイン                      |
+| Variable              | Default                             | Description                          |
+| --------------------- | ----------------------------------- | ------------------------------------ |
+| DB_HOST               | db                                  | PostgreSQL host                      |
+| DB_PORT               | 5432                                | PostgreSQL port                      |
+| DB_SUPERUSER          | postgres                            | DB connection user (superuser)       |
+| DB_SUPERUSER_PASSWORD | password                            | DB connection password               |
+| RLS_ROLE              | rails_user                          | RLS-restricted role name             |
+| RLS_ROLE_PASSWORD     | rails_password                      | RLS role password                    |
+| OPA_URL               | http://opa:8181/v1/data/authz/allow | OPA endpoint                         |
+| AUTH0_CLIENT_ID       | -                                   | Auth0 client ID                      |
+| AUTH0_CLIENT_SECRET   | -                                   | Auth0 client secret                  |
+| AUTH0_DOMAIN          | -                                   | Auth0 domain                         |
 
 ---
 
-## 14. シードデータ
+## 14. Seed Data
 
-開発・検証用に2テナント分のデータを投入：
+Two tenants of development and testing data are seeded:
 
-| テナント  | サブドメイン | ユーザー                                            | プロジェクト                      | タスク |
-| --------- | ------------ | --------------------------------------------------- | --------------------------------- | ------ |
-| Company A | company-a    | Admin A (admin), Member A (member), Guest A (guest) | Website Redesign, API Development | 5件    |
-| Company B | company-b    | Admin B (admin)                                     | Mobile App                        | 2件    |
+| Tenant    | Subdomain | Users                                               | Projects                          | Tasks   |
+| --------- | --------- | --------------------------------------------------- | --------------------------------- | ------- |
+| Company A | company-a | Admin A (admin), Member A (member), Guest A (guest) | Website Redesign, API Development | 5 tasks |
+| Company B | company-b | Admin B (admin)                                     | Mobile App                        | 2 tasks |
 
 ---
 
 ## 15. CI/CD
 
-GitHub Actions で以下を自動実行：
+The following jobs run automatically via GitHub Actions:
 
-| ジョブ    | 内容                                             |
-| --------- | ------------------------------------------------ |
-| scan_ruby | Brakeman によるセキュリティ静的解析              |
-| scan_js   | importmap audit によるJS依存関係の脆弱性チェック |
-| lint      | RuboCop によるコードスタイルチェック             |
+| Job       | Description                                          |
+| --------- | ---------------------------------------------------- |
+| scan_ruby | Security static analysis with Brakeman               |
+| scan_js   | JS dependency vulnerability check with importmap audit |
+| lint      | Code style check with RuboCop                        |
 
 ---
 
-## 16. 作業指示書からの変更点
+## 16. Deviations from Original Specification
 
-| 項目              | 当初指示                               | 実装                                                                                                  |
-| ----------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Pumaポート        | 8080                                   | 3000（Puma デフォルト）。docker-compose で 8080:8080 のポートマッピングは設定済み                     |
-| DB接続方式        | マイグレーション用と実行用で別ユーザー | 単一接続（postgres）+ `SET ROLE` による動的切り替え方式に変更。コネクションプール管理がシンプルになる |
-| Stimulus          | 活用箇所として言及                     | 基盤のみ設定済み。ステータス変更はインラインJS (`onchange="this.form.requestSubmit()"`) で実装        |
-| タスクCRUD        | 特に制限なし                           | MVP として index / show / update のみ公開。create / destroy は未実装                                  |
-| Railsモジュール名 | 指定なし                               | `Workspace` として生成（`config/application.rb`）                                                     |
+| Item               | Original Specification                          | Implementation                                                                                              |
+| ------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Puma port          | 8080                                            | 3000 (Puma default). Port mapping 8080:8080 is configured in docker-compose                                 |
+| DB connection      | Separate users for migration and runtime        | Single connection (postgres) + dynamic switching via `SET ROLE`. Simplifies connection pool management       |
+| Stimulus           | Mentioned as a usage target                     | Foundation only. Status changes use inline JS (`onchange="this.form.requestSubmit()"`)                      |
+| Task CRUD          | No specific restrictions                        | MVP exposes only index / show / update. create / destroy are not implemented                                |
+| Rails module name  | Not specified                                   | Generated as `Workspace` (`config/application.rb`)                                                          |
