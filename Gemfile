@@ -49,6 +49,12 @@ group :development, :test do
 
   # Test profiling
   gem "test-prof"
+
+  # RSpec
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "shoulda-matchers"
+  gem "webmock"
 end
 
 group :development do
