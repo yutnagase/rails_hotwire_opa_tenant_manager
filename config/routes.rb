@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   # Auth0コールバック用ルート
   get "/auth/auth0/callback" => "users/omniauth_callbacks#auth0"
 
+  resource :dev_session, only: [ :new, :create ] if Rails.env.development?
+
   resources :projects, only: [ :index ] do
     resources :tasks, only: [ :index, :show, :update ]
   end

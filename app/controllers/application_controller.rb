@@ -25,10 +25,9 @@ class ApplicationController < ActionController::Base
 
   def authenticate_user!
     # TODO: Auth0接続後にこの分岐を削除し、super のみにすること。
-    # 仮実装: development環境かつAuth0未接続時は、テナントの最初のユーザーで自動ログインする。
-    if Rails.env.development? && current_user.nil?
-      user = ActsAsTenant.current_tenant&.users&.first
-      sign_in(user) if user
+    # 仮実装: development環境かつAuth0未接続時は、ユーザー選択画面にリダイレクトする。
+    if Rails.env.development? && !user_signed_in?
+      redirect_to new_dev_session_path and return
     end
 
     super unless user_signed_in?
