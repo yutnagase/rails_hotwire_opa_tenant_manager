@@ -34,6 +34,7 @@ The application is intentionally minimal in features, but strong in **architectu
 | Authentication | Devise + omniauth-auth0                               |
 | Authorization  | Open Policy Agent (OPA)                               |
 | Multi-tenancy  | acts_as_tenant                                        |
+| Testing        | RSpec, FactoryBot, shoulda-matchers, WebMock          |
 | Environment    | DevContainer (Docker Compose)                         |
 | CI             | GitHub Actions (Brakeman / RuboCop / importmap audit) |
 
@@ -144,6 +145,16 @@ If you want to connect a real Auth0 tenant, set the following environment variab
 bin/rails server -b 0.0.0.0 -p 8080
 ```
 
+---
+
+### 6. Run Tests
+
+```bash
+bundle exec rspec
+```
+
+> For details on test structure and design, see [docs/testing.md](docs/testing.md).
+
 Access the application via subdomains:
 
 - `http://company-a.localhost:8080` — Company A tenant
@@ -178,7 +189,7 @@ Feature scope is kept intentionally small to make the architecture easier to und
 
 - Full Auth0 Organizations integration
 - Admin UI for tenant and user management
-- Automated tests for OPA policies
+- Automated tests for OPA policies (Rego unit tests)
 - Token-based API authorization using OPA
 
 ---

@@ -30,6 +30,10 @@ An MVP focused on security (multi-tenant isolation, RLS, OPA authorization) and 
 | DB row-level security | PostgreSQL RLS                       | Defense in depth at the DB layer     |
 | JWT                   | ruby-jwt                             | Token verification                   |
 | Test acceleration     | test-prof                            | For authorization tests              |
+| Test framework        | rspec-rails                          | BDD-style testing                    |
+| Test data             | factory_bot_rails                    | Declarative test data generation     |
+| Test matchers         | shoulda-matchers                     | One-liner validation/association tests |
+| HTTP stubbing         | webmock                              | Stub external HTTP requests (OPA)    |
 | CI                    | GitHub Actions                       | Brakeman / importmap audit / RuboCop |
 
 ---
@@ -302,7 +306,16 @@ rails_hotwire_opa_tenant_manager/
 │   ├── rls.md              # RLS detailed documentation
 │   ├── opa.md              # OPA detailed documentation
 │   ├── auth0.md            # Auth0 authentication documentation
+│   ├── testing.md          # Testing strategy and structure
 │   └── images/             # Architecture and flow diagrams
+├── spec/
+│   ├── factories/          # FactoryBot definitions
+│   ├── models/             # Model specs
+│   ├── services/           # Service specs (OpaClient)
+│   ├── requests/           # Request specs (controllers)
+│   ├── support/            # Shared helpers (OPA stubs)
+│   ├── rails_helper.rb
+│   └── spec_helper.rb
 └── opa/
     └── policy/
         └── authz.rego      # OPA authorization policy
@@ -373,6 +386,7 @@ The following jobs run automatically via GitHub Actions:
 | scan_ruby | Security static analysis with Brakeman               |
 | scan_js   | JS dependency vulnerability check with importmap audit |
 | lint      | Code style check with RuboCop                        |
+| test      | RSpec test suite                                     |
 
 ---
 

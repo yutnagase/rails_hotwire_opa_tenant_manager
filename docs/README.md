@@ -14,6 +14,7 @@ For a project overview and quick start guide, see the [root README](../README.md
 | [rls.md](rls.md) | PostgreSQL Row Level Security — concepts, how RLS works, and this project's implementation |
 | [opa.md](opa.md) | Open Policy Agent — policy-based authorization, Rego language, and integration details |
 | [auth0.md](auth0.md) | Authentication with Auth0 — OAuth2 flow, Devise integration, and multi-tenant auth |
+| [testing.md](testing.md) | Testing — RSpec setup, test structure, and design decisions |
 
 ---
 
@@ -37,3 +38,4 @@ If you are new to this project:
 3. [rls.md](rls.md) — Understanding the database-layer security
 4. [opa.md](opa.md) — Understanding the authorization model
 5. [auth0.md](auth0.md) — Understanding the authentication flow
+6. [testing.md](testing.md) — Testing strategy and how to run tests
