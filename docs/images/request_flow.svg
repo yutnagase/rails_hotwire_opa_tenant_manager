@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 640" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#b85450"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="700" height="640" fill="#fff"/>
+
+  <!-- Title -->
+  <text x="350" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">Request Processing Flow</text>
+
+  <!-- Step 1: Browser Request -->
+  <rect x="150" y="60" width="320" height="50" rx="10" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="310" y="82" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">1. Browser Request</text>
+  <text x="310" y="99" text-anchor="middle" font-size="11" fill="#555">company-a.localhost:8080/projects</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="310" y1="110" x2="310" y2="130" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 2: scope_to_tenant -->
+  <rect x="150" y="132" width="320" height="88" rx="10" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="310" y="153" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">2. scope_to_tenant (around_action)</text>
+  <text x="170" y="172" font-size="11" fill="#555">├ Subdomain → Resolve Tenant</text>
+  <text x="170" y="188" font-size="11" fill="#555">├ Set ActsAsTenant.current_tenant</text>
+  <text x="170" y="204" font-size="11" fill="#555">├ SET ROLE rails_user</text>
+  <text x="170" y="220" font-size="11" fill="#555">└ SET app.current_tenant_id = '{id}'</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="310" y1="220" x2="310" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 3: authenticate_user! -->
+  <rect x="150" y="242" width="320" height="50" rx="10" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="310" y="264" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">3. authenticate_user!</text>
+  <text x="310" y="281" text-anchor="middle" font-size="11" fill="#555">Devise authentication check</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="310" y1="292" x2="310" y2="312" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 4: authorize_with_opa -->
+  <rect x="150" y="314" width="320" height="50" rx="10" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <text x="310" y="336" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">4. authorize_with_opa</text>
+  <text x="310" y="353" text-anchor="middle" font-size="11" fill="#555">HTTP POST to OPA → Allow / Deny</text>
+
+  <!-- Arrow 4→5 -->
+  <line x1="310" y1="364" x2="310" y2="384" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- 403 Forbidden -->
+  <rect x="540" y="314" width="130" height="50" rx="10" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="605" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="#b85450">403 Forbidden</text>
+
+  <!-- Arrow 4→403 (Deny) -->
+  <line x1="470" y1="339" x2="538" y2="339" stroke="#b85450" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-red)"/>
+  <text x="504" y="332" text-anchor="middle" font-size="10" fill="#b85450">Deny</text>
+
+  <!-- Step 5: Controller Action -->
+  <rect x="150" y="386" width="320" height="50" rx="10" fill="#e1d5e7" stroke="#9673a6" stroke-width="2"/>
+  <text x="310" y="408" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">5. Controller Action</text>
+  <text x="310" y="425" text-anchor="middle" font-size="11" fill="#555">Queries scoped by acts_as_tenant + RLS</text>
+
+  <!-- Arrow 5→6 -->
+  <line x1="310" y1="436" x2="310" y2="456" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 6: ensure -->
+  <rect x="150" y="458" width="320" height="50" rx="10" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="310" y="480" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">6. ensure</text>
+  <text x="310" y="497" text-anchor="middle" font-size="11" fill="#555">RESET ROLE / RESET app.current_tenant_id</text>
+
+  <!-- Arrow 6→7 -->
+  <line x1="310" y1="508" x2="310" y2="528" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 7: Response -->
+  <rect x="150" y="530" width="320" height="50" rx="10" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="310" y="552" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">7. Response</text>
+  <text x="310" y="569" text-anchor="middle" font-size="11" fill="#555">(HTML / Turbo Frame)</text>
+</svg>

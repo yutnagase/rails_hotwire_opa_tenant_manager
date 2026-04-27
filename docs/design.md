@@ -38,7 +38,7 @@ An MVP focused on security (multi-tenant isolation, RLS, OPA authorization) and 
 
 ### 3.1 Overall Structure
 
-![architecture.png](images/architecture.png)
+![Architecture diagram](images/architecture.svg)
 
 ### 3.2 DevContainer Configuration
 
@@ -52,7 +52,7 @@ Three services are started via `docker-compose.yml`:
 
 ### 3.3 Request Flow
 
-![Request flow diagram](images/request_flow.png)
+![Request flow diagram](images/request_flow.svg)
 
 ---
 

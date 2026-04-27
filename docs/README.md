@@ -23,8 +23,8 @@ Architecture and request flow diagrams are stored in `docs/images/`:
 
 | File | Description |
 |---|---|
-| [images/architecture.png](images/architecture.png) | Overall system architecture |
-| [images/request_flow.png](images/request_flow.png) | Request processing flow |
+| [images/architecture.svg](images/architecture.svg) | Overall system architecture |
+| [images/request_flow.svg](images/request_flow.svg) | Request processing flow |
 
 ---
 
