@@ -1,6 +1,12 @@
-<h2>Select a user to sign in</h2>
-<% @users.each do |user| %>
-  <div style="margin-bottom: 10px;">
-    <%= button_to "#{user.name} (#{user.role})", dev_session_path, params: { user_id: user.id }, method: :post, style: "cursor: pointer; padding: 8px 16px;" %>
-  </div>
+<h2>Sign in</h2>
+
+<% if @auth0_configured %>
+  <%= button_to "Sign in with Auth0", user_auth0_omniauth_authorize_path, method: :post, data: { turbo: false }, style: "cursor: pointer; padding: 10px 20px; font-size: 1rem;" %>
+<% else %>
+  <p>Select a user to sign in (development mode)</p>
+  <% @users.each do |user| %>
+    <div style="margin-bottom: 10px;">
+      <%= button_to "#{user.name} (#{user.role})", dev_session_path, params: { user_id: user.id }, method: :post, style: "cursor: pointer; padding: 8px 16px;" %>
+    </div>
+  <% end %>
 <% end %>

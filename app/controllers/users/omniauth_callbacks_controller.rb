@@ -1,5 +1,7 @@
 class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   skip_before_action :verify_authenticity_token, only: :auth0
+  skip_before_action :authenticate_user!
+  skip_before_action :authorize_with_opa
 
   def auth0
     auth = request.env["omniauth.auth"]

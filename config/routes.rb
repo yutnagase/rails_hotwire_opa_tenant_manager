@@ -12,10 +12,8 @@ Rails.application.routes.draw do
     delete "sign_out", to: "users/sessions#destroy", as: :destroy_user_session
   end
 
-  # Auth0コールバック用ルート
-  get "/auth/auth0/callback" => "users/omniauth_callbacks#auth0"
 
-  resource :dev_session, only: [ :new, :create ] if Rails.env.development?
+  resource :dev_session, only: [ :new, :create ]
 
   resources :projects, only: [ :index ] do
     resources :tasks, only: [ :index, :show, :update ]

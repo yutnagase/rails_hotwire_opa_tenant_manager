@@ -24,13 +24,13 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticate_user!
-    # TODO: Auth0接続後にこの分岐を削除し、super のみにすること。
-    # 仮実装: development環境かつAuth0未接続時は、ユーザー選択画面にリダイレクトする。
-    if Rails.env.development? && !user_signed_in?
-      redirect_to new_dev_session_path and return
-    end
+    return if user_signed_in?
 
-    super unless user_signed_in?
+    redirect_to new_dev_session_path
+  end
+
+  def auth0_configured?
+    ENV["AUTH0_CLIENT_ID"].present? && ENV["AUTH0_CLIENT_ID"] != "your_client_id"
   end
 
   def authorize_with_opa

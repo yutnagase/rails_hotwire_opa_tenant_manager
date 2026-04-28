@@ -4,7 +4,7 @@ class Users::SessionsController < Devise::SessionsController
   def destroy
     signed_out = (Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name))
     if signed_out
-      path = Rails.env.development? ? new_dev_session_path : root_path
+      path = (!auth0_configured? && Rails.env.development?) ? new_dev_session_path : root_path
       redirect_to path, notice: "Signed out."
     end
   end

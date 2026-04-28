@@ -276,7 +276,7 @@ Devise.setup do |config|
     ENV.fetch("AUTH0_CLIENT_ID", "your_client_id"),
     ENV.fetch("AUTH0_CLIENT_SECRET", "your_client_secret"),
     ENV.fetch("AUTH0_DOMAIN", "your_tenant.auth0.com"),
-    callback_path: "/auth/auth0/callback",
+    callback_path: "/users/auth/auth0/callback",
     authorize_params: { scope: "openid profile email" }
 
   # ==> Warden configuration

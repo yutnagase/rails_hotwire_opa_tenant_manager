@@ -1,23 +1,17 @@
-class DevSessionsController < ActionController::Base
-  layout "application"
-
-  before_action :ensure_development!
+class DevSessionsController < ApplicationController
+  skip_before_action :authenticate_user!
+  skip_before_action :authorize_with_opa
 
   def new
-    tenant = Tenant.find_by!(subdomain: request.subdomain)
-    @users = tenant.users
+    @auth0_configured = auth0_configured?
+    @users = ActsAsTenant.current_tenant.users unless @auth0_configured
   end
 
   def create
-    tenant = Tenant.find_by!(subdomain: request.subdomain)
-    user = tenant.users.find(params[:user_id])
+    raise ActionController::RoutingError, "Not Found" if auth0_configured?
+
+    user = ActsAsTenant.current_tenant.users.find(params[:user_id])
     sign_in(user)
     redirect_to root_path, notice: "Signed in as #{user.name}."
-  end
-
-  private
-
-  def ensure_development!
-    raise ActionController::RoutingError, "Not Found" unless Rails.env.development?
   end
 end
