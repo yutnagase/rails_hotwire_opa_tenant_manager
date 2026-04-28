@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_26_025741) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_28_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -49,9 +49,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_26_025741) do
     t.string "email", null: false
     t.string "name", null: false
     t.string "role", default: "member", null: false
+    t.boolean "seed_admin", default: false, null: false
     t.bigint "tenant_id", null: false
     t.datetime "updated_at", null: false
-    t.index ["auth0_uid"], name: "index_users_on_auth0_uid", unique: true
+    t.index ["auth0_uid", "tenant_id"], name: "index_users_on_auth0_uid_and_tenant_id", unique: true
     t.index ["tenant_id"], name: "index_users_on_tenant_id"
   end
 
