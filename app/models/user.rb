@@ -7,17 +7,34 @@ class User < ApplicationRecord
 
   ROLES = %w[admin member guest].freeze
 
-  validates :auth0_uid, presence: true, uniqueness: true
+  validates :auth0_uid, presence: true, uniqueness: { scope: :tenant_id }
   validates :name, presence: true
   validates :email, presence: true
   validates :role, presence: true, inclusion: { in: ROLES }
 
-  # Auth0コールバックから呼ばれる。テナント内でユーザーを検索し、なければ作成する。
+  # Auth0コールバックから呼ばれる。
+  # 1. auth0_uidで既存ユーザーを検索（ログイン済みユーザー）
+  # 2. emailでseedユーザーを検索し、auth0_uidを紐付け（初回ログイン）
+  # 3. 見つからなければguestとして新規作成
   def self.from_omniauth(auth, tenant)
-    where(auth0_uid: auth.uid, tenant: tenant).first_or_create! do |user|
-      user.email = auth.info.email
-      user.name  = auth.info.name || auth.info.email
-      user.role  = "member"
+    # 既にauth0_uidで紐付け済みのユーザー
+    user = find_by(auth0_uid: auth.uid, tenant: tenant)
+    return user if user
+
+    # emailでseedユーザーを検索して紐付け
+    user = find_by(email: auth.info.email, tenant: tenant)
+    if user
+      user.update!(auth0_uid: auth.uid, name: auth.info.name || user.name)
+      return user
     end
+
+    # 新規ユーザーをguestで作成
+    create!(
+      tenant: tenant,
+      auth0_uid: auth.uid,
+      email: auth.info.email,
+      name: auth.info.name || auth.info.email,
+      role: "guest"
+    )
   end
 end
