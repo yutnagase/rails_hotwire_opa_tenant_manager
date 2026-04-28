@@ -228,7 +228,7 @@ Roles are stored in the `role` column of the `users` table and assigned at user 
 | `member` | Regular team member | Read, create, update |
 | `guest` | External collaborator | Read only |
 
-New users created via Auth0 callback are assigned the `member` role by default.
+New users created via Auth0 callback are assigned the `guest` role by default. Seed admin users retain the `admin` role and cannot be changed (`seed_admin: true`).
 
 ---
 

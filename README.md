@@ -18,9 +18,9 @@ The application is intentionally minimal in features, but strong in **architectu
 - **SPA-like user experience**  
   Hotwire (Turbo Drive / Turbo Frames) enables seamless UI updates without full page reloads.
 
-- **Auth0-ready authentication**  
-  Authentication is implemented with Devise + OmniAuth (Auth0).  
-  Full Auth0 integration is optional and can be enabled later.
+- **Auth0 authentication**  
+  Authentication is delegated to Auth0 (Devise + OmniAuth).  
+  Auth0 handles identity verification only; role management is handled entirely within Rails.
 
 ---
 
@@ -125,17 +125,21 @@ bin/rails db:seed
 
 ---
 
-### 4. (Optional) Auth0 Configuration
+### 4. Auth0 and Environment Configuration
 
-If you want to connect a real Auth0 tenant, set the following environment variables:
+Create `.devcontainer/.env` with the following variables:
 
-| Variable            | Description         |
-| ------------------- | ------------------- |
-| AUTH0_CLIENT_ID     | Auth0 client ID     |
-| AUTH0_CLIENT_SECRET | Auth0 client secret |
-| AUTH0_DOMAIN        | Auth0 domain        |
+| Variable                    | Description                              |
+| --------------------------- | ---------------------------------------- |
+| AUTH0_CLIENT_ID             | Auth0 application client ID              |
+| AUTH0_CLIENT_SECRET         | Auth0 application client secret          |
+| AUTH0_DOMAIN                | Auth0 tenant domain                      |
+| SEED_ADMIN_EMAIL_COMPANY_A  | Email address of Company A initial admin |
+| SEED_ADMIN_EMAIL_COMPANY_B  | Email address of Company B initial admin |
 
-> If Auth0 is not configured, the development environment automatically logs in the first user in the tenant.
+The seed admin emails must match the Google account (or other Auth0 identity provider) email that the initial administrator will use to log in.
+
+> If Auth0 is not configured, a development-only user selection screen is shown instead.
 
 ---
 
@@ -164,10 +168,13 @@ Access the application via subdomains:
 
 ## Seed Data
 
-| Tenant    | Subdomain | Users                                               |
-| --------- | --------- | --------------------------------------------------- |
-| Company A | company-a | Admin A (admin), Member A (member), Guest A (guest) |
-| Company B | company-b | Admin B (admin)                                     |
+| Tenant    | Subdomain | Users          |
+| --------- | --------- | -------------- |
+| Company A | company-a | Admin A (admin) |
+| Company B | company-b | Admin B (admin) |
+
+Seed admin users are created with `seed_admin: true` and their roles cannot be changed.  
+Additional users are created automatically as `guest` on first Auth0 login, and admins can change their roles.
 
 ---
 
@@ -187,8 +194,7 @@ Feature scope is kept intentionally small to make the architecture easier to und
 
 ## Future Improvements
 
-- Full Auth0 Organizations integration
-- Admin UI for tenant and user management
+- Admin UI for user role management within tenants
 - Automated tests for OPA policies (Rego unit tests)
 - Token-based API authorization using OPA
 

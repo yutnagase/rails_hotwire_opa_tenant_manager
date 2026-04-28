@@ -86,16 +86,17 @@ users 1──* tasks (optional)
 
 #### users
 
-| Column     | Type     | Constraints                | Description     |
-| ---------- | -------- | -------------------------- | --------------- |
-| id         | bigint   | PK                         |                 |
-| tenant_id  | bigint   | NOT NULL, FK(tenants)      | Owning tenant   |
-| auth0_uid  | string   | NOT NULL, UNIQUE           | Auth0 user ID   |
-| name       | string   | NOT NULL                   | Display name    |
-| email      | string   | NOT NULL                   | Email address   |
-| role       | string   | NOT NULL, DEFAULT 'member' | Permission role |
-| created_at | datetime | NOT NULL                   |                 |
-| updated_at | datetime | NOT NULL                   |                 |
+| Column     | Type     | Constraints                          | Description                    |
+| ---------- | -------- | ------------------------------------ | ------------------------------ |
+| id         | bigint   | PK                                   |                                |
+| tenant_id  | bigint   | NOT NULL, FK(tenants)                | Owning tenant                  |
+| auth0_uid  | string   | NOT NULL, UNIQUE(tenant_id)          | Auth0 user ID                  |
+| name       | string   | NOT NULL                             | Display name                   |
+| email      | string   | NOT NULL                             | Email address                  |
+| role       | string   | NOT NULL, DEFAULT 'member'           | Permission role                |
+| seed_admin | boolean  | NOT NULL, DEFAULT false              | Protects initial admin role    |
+| created_at | datetime | NOT NULL                             |                                |
+| updated_at | datetime | NOT NULL                             |                                |
 
 Role types:
 
@@ -192,12 +193,14 @@ OPA handles **vertical access control** — role-based permissions within a tena
 
 ## 8. Authentication Design
 
-OAuth2 authentication via Devise + omniauth-auth0, designed for Auth0 Organizations.
+OAuth2 authentication via Devise + omniauth-auth0.
 
-- Auth0 handles all credential verification — no passwords are stored in the application
-- Users are automatically created on first login with the `member` role
+- Auth0 handles **identity verification only** — no passwords are stored in the application
+- Role management is handled entirely within Rails (`users.role` column)
+- Seed admin users are pre-created with `seed_admin: true` and linked to Auth0 on first login via email match
+- New users created via Auth0 callback are assigned the `guest` role
 - Subdomain is used to scope users to the correct tenant during the callback
-- In development, a fallback auto-signs in the first tenant user when Auth0 is not configured
+- A login page (`/dev_session/new`) shows an Auth0 button or a dev user selection list depending on configuration
 
 > For a detailed explanation of the Auth0 flow, Devise configuration, and multi-tenant authentication, see [auth0.md](auth0.md).
 
@@ -266,6 +269,7 @@ rails_hotwire_opa_tenant_manager/
 │   │   │   ├── omniauth_callbacks_controller.rb  # Auth0 callback
 │   │   │   └── sessions_controller.rb            # Sign out
 │   │   ├── application_controller.rb  # Tenant control, auth, OPA authz
+│   │   ├── dev_sessions_controller.rb # Login page (Auth0 / dev user selection)
 │   │   ├── projects_controller.rb
 │   │   └── tasks_controller.rb
 │   ├── models/
@@ -351,29 +355,35 @@ rails_hotwire_opa_tenant_manager/
 
 ## 13. Environment Variables
 
-| Variable              | Default                             | Description                          |
-| --------------------- | ----------------------------------- | ------------------------------------ |
-| DB_HOST               | db                                  | PostgreSQL host                      |
-| DB_PORT               | 5432                                | PostgreSQL port                      |
-| DB_SUPERUSER          | postgres                            | DB connection user (superuser)       |
-| DB_SUPERUSER_PASSWORD | password                            | DB connection password               |
-| RLS_ROLE              | rails_user                          | RLS-restricted role name             |
-| RLS_ROLE_PASSWORD     | rails_password                      | RLS role password                    |
-| OPA_URL               | http://opa:8181/v1/data/authz/allow | OPA endpoint                         |
-| AUTH0_CLIENT_ID       | -                                   | Auth0 client ID                      |
-| AUTH0_CLIENT_SECRET   | -                                   | Auth0 client secret                  |
-| AUTH0_DOMAIN          | -                                   | Auth0 domain                         |
+| Variable              | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| DB_HOST               | PostgreSQL host                                  |
+| DB_PORT               | PostgreSQL port                                  |
+| DB_SUPERUSER          | DB connection user (superuser)                   |
+| DB_SUPERUSER_PASSWORD | DB connection password                           |
+| RLS_ROLE              | RLS-restricted role name                         |
+| RLS_ROLE_PASSWORD     | RLS role password                                |
+| OPA_URL               | OPA endpoint                                     |
+| AUTH0_CLIENT_ID       | Auth0 client ID                                  |
+| AUTH0_CLIENT_SECRET   | Auth0 client secret                              |
+| AUTH0_DOMAIN          | Auth0 domain                                     |
+| SEED_ADMIN_EMAIL_COMPANY_A | Email for Company A initial admin             |
+| SEED_ADMIN_EMAIL_COMPANY_B | Email for Company B initial admin             |
 
 ---
 
 ## 14. Seed Data
 
-Two tenants of development and testing data are seeded:
+Two tenants with initial admin users are seeded:
 
-| Tenant    | Subdomain | Users                                               | Projects                          | Tasks   |
-| --------- | --------- | --------------------------------------------------- | --------------------------------- | ------- |
-| Company A | company-a | Admin A (admin), Member A (member), Guest A (guest) | Website Redesign, API Development | 5 tasks |
-| Company B | company-b | Admin B (admin)                                     | Mobile App                        | 2 tasks |
+| Tenant    | Subdomain | Users           | Projects                          | Tasks   |
+| --------- | --------- | --------------- | --------------------------------- | ------- |
+| Company A | company-a | Admin A (admin) | Website Redesign, API Development | 5 tasks |
+| Company B | company-b | Admin B (admin) | Mobile App                        | 2 tasks |
+
+Seed admin users have `seed_admin: true` and their roles cannot be changed.  
+Admin email addresses are read from environment variables (`SEED_ADMIN_EMAIL_COMPANY_A`, `SEED_ADMIN_EMAIL_COMPANY_B`).  
+Additional users are created as `guest` on first Auth0 login.
 
 ---
 
