@@ -77,18 +77,9 @@ For RLS to be effective, the application must use a role with `NOBYPASSRLS` duri
 
 This project uses a **dual-layer tenant isolation** strategy:
 
-```
-┌─────────────────────────────────────────────┐
-│  Layer 1: Application Layer                 │
-│  acts_as_tenant — auto-adds WHERE clause    │
-├─────────────────────────────────────────────┤
-│  Layer 2: Database Layer                    │
-│  PostgreSQL RLS — enforces row filtering    │
-│  even if Layer 1 is bypassed                │
-└─────────────────────────────────────────────┘
-```
+![Dual-Layer Tenant Isolation](images/rls_dual_layer.svg)
 
-Layer 1 (`acts_as_tenant`) handles the common case. Layer 2 (RLS) acts as the **last line of defense**.
+Layer 1 (`acts_as_tenant`) handles the common case by automatically appending `WHERE tenant_id = ?` to ActiveRecord queries. Layer 2 (PostgreSQL RLS) acts as the **last line of defense**, enforcing row filtering at the database engine level — even if Layer 1 is bypassed by raw SQL or query builder bugs.
 
 ### Step-by-Step Implementation
 
@@ -188,18 +179,9 @@ Using a single connection pool (as `postgres`) with dynamic `SET ROLE` keeps the
 
 ### What Happens at Each Stage
 
-```
-1. Browser sends request to company-a.localhost:8080
-2. Rails resolves subdomain → finds Tenant (id: 1)
-3. SET ROLE rails_user              ← RLS now active
-4. SET app.current_tenant_id = '1'  ← Policy filter set
-5. All queries are filtered:
-   SELECT * FROM tasks
-   → PostgreSQL internally applies: WHERE tenant_id = 1
-6. Response sent to browser
-7. RESET ROLE                       ← Back to superuser
-8. RESET app.current_tenant_id      ← Context cleared
-```
+The following sequence diagram shows the full lifecycle of a single request, from role switching through query execution to connection cleanup:
+
+![Per-Request RLS Activation Flow](images/rls_per_request.svg)
 
 ### Defense in Depth: What Each Layer Catches
 
