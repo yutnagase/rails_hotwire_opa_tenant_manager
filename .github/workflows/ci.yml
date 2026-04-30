@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  scan_ruby:
+  brakeman:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,10 +19,10 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Scan for common Rails security vulnerabilities using static analysis
+      - name: Brakeman
         run: bin/brakeman --no-pager
 
-  scan_js:
+  importmap_audit:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,7 +35,7 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Scan for security vulnerabilities in JavaScript dependencies
+      - name: Importmap audit
         run: bin/importmap audit
 
   rubocop:
@@ -86,10 +86,10 @@ jobs:
       - name: Setup database
         run: bin/rails db:create db:migrate
 
-      - name: Run tests
+      - name: RSpec
         run: bundle exec rspec
 
-  test_opa:
+  opa_test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -98,6 +98,6 @@ jobs:
       - name: Setup OPA
         uses: open-policy-agent/setup-opa@v2
 
-      - name: Run OPA policy tests
+      - name: OPA policy test
         run: opa test opa/policy/ -v
 

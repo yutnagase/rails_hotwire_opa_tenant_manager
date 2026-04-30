@@ -161,16 +161,16 @@ Inside the Dev Container:
 # RSpec
 bundle exec rspec
 
-# OPA policy tests
+# OPA policy test
 docker exec -i $(docker ps -qf "ancestor=openpolicyagent/opa:latest") opa test /policies/ -v
 
-# Brakeman (security scan)
+# Brakeman
 bundle exec brakeman --no-pager
 
 # RuboCop
 bundle exec rubocop
 
-# importmap audit (JS dependency scan)
+# Importmap audit
 bin/importmap audit
 ```
 

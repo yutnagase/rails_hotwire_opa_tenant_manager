@@ -12,8 +12,9 @@
 
 ## Checklist
 
-- [ ] RSpec tests pass (`bundle exec rspec`)
+- [ ] RSpec passes (`bundle exec rspec`)
 - [ ] RuboCop passes (`bundle exec rubocop`)
 - [ ] Brakeman passes (`bundle exec brakeman --no-pager`)
-- [ ] OPA policy tests pass (if policies were changed)
+- [ ] Importmap audit passes (`bin/importmap audit`)
+- [ ] OPA policy test passes (if policies were changed)
 - [ ] Migrations are reversible (if added)
