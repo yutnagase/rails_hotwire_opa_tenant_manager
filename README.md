@@ -36,7 +36,7 @@ The application is intentionally minimal in features, but strong in **architectu
 | Multi-tenancy  | acts_as_tenant                                        |
 | Testing        | RSpec, FactoryBot, shoulda-matchers, WebMock          |
 | Environment    | DevContainer (Docker Compose)                         |
-| CI             | GitHub Actions (RSpec / OPA policy test / Brakeman / RuboCop / importmap audit) |
+| CI             | GitHub Actions (RSpec / OPA policy test / Brakeman / RuboCop / Importmap audit) |
 
 
 
@@ -161,16 +161,16 @@ Inside the Dev Container:
 # RSpec
 bundle exec rspec
 
-# OPA policy tests
+# OPA policy test
 docker exec -i $(docker ps -qf "ancestor=openpolicyagent/opa:latest") opa test /policies/ -v
 
-# Brakeman (security scan)
+# Brakeman
 bundle exec brakeman --no-pager
 
-# RuboCop (lint)
+# RuboCop
 bundle exec rubocop
 
-# importmap audit (JS dependency scan)
+# Importmap audit
 bin/importmap audit
 ```
 
