@@ -15,6 +15,7 @@ For a project overview and quick start guide, see the [root README](../README.md
 | [opa.md](opa.md) | Open Policy Agent — policy-based authorization, Rego language, and integration details |
 | [auth0.md](auth0.md) | Authentication with Auth0 — OAuth2 flow, Devise integration, and multi-tenant auth |
 | [testing.md](testing.md) | Testing — RSpec setup, test structure, and design decisions |
+| [ci.md](ci.md) | CI — GitHub Actions workflow, each job's purpose, and local verification |
 
 ---
 
@@ -39,3 +40,4 @@ If you are new to this project:
 4. [opa.md](opa.md) — Understanding the authorization model
 5. [auth0.md](auth0.md) — Understanding the authentication flow
 6. [testing.md](testing.md) — Testing strategy and how to run tests
+7. [ci.md](ci.md) — CI pipeline and automated quality checks
