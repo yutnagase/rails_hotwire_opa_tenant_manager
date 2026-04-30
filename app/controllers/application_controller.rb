@@ -13,7 +13,8 @@ class ApplicationController < ActionController::Base
     set_current_tenant(tenant)
 
     conn = ActiveRecord::Base.connection
-    conn.execute("SET ROLE #{ENV.fetch('RLS_ROLE', 'rails_user')}")
+    role = conn.quote_column_name(ENV.fetch("RLS_ROLE", "rails_user"))
+    conn.execute("SET ROLE #{role}")
     conn.execute("SET app.current_tenant_id = '#{tenant.id}'")
 
     yield
