@@ -2,6 +2,8 @@ package authz
 
 default allow = false
 
+import rego.v1
+
 # admin: 全操作可能
 allow if input.user.role == "admin"
 

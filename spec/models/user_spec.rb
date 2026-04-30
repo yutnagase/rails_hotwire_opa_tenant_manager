@@ -9,7 +9,7 @@ RSpec.describe User, type: :model do
     before { tenant } # ensure tenant exists before subject
 
     it { is_expected.to validate_presence_of(:auth0_uid) }
-    it { is_expected.to validate_uniqueness_of(:auth0_uid) }
+    it { is_expected.to validate_uniqueness_of(:auth0_uid).scoped_to(:tenant_id) }
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_presence_of(:email) }
     it { is_expected.to validate_presence_of(:role) }

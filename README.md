@@ -36,7 +36,7 @@ The application is intentionally minimal in features, but strong in **architectu
 | Multi-tenancy  | acts_as_tenant                                        |
 | Testing        | RSpec, FactoryBot, shoulda-matchers, WebMock          |
 | Environment    | DevContainer (Docker Compose)                         |
-| CI             | GitHub Actions (Brakeman / RuboCop / importmap audit) |
+| CI             | GitHub Actions (RSpec / OPA policy test / Brakeman / RuboCop / importmap audit) |
 
 ---
 
@@ -197,7 +197,6 @@ Feature scope is kept intentionally small to make the architecture easier to und
 ## Future Improvements
 
 - Admin UI for user role management within tenants
-- Automated tests for OPA policies (Rego unit tests)
 - Token-based API authorization using OPA
 
 ---
