@@ -111,6 +111,8 @@ The following services will be started:
 | db      | 5432 | PostgreSQL        |
 | opa     | 8181 | OPA policy engine |
 
+> `bundle install` runs automatically when the container is created (via `postCreateCommand` in `devcontainer.json`), so no manual gem installation is needed.
+
 ---
 
 ### 3. Database Setup
