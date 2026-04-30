@@ -155,8 +155,23 @@ bin/rails server -b 0.0.0.0 -p 8080
 
 ### 6. Run Tests
 
+Inside the Dev Container:
+
 ```bash
+# RSpec
 bundle exec rspec
+
+# OPA policy tests
+docker exec -i $(docker ps -qf "ancestor=openpolicyagent/opa:latest") opa test /policies/ -v
+
+# Brakeman (security scan)
+bundle exec brakeman --no-pager
+
+# RuboCop (lint)
+bundle exec rubocop
+
+# importmap audit (JS dependency scan)
+bin/importmap audit
 ```
 
 > For details on test structure and design, see [docs/testing.md](docs/testing.md).
