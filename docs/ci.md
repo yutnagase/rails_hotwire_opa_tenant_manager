@@ -6,7 +6,6 @@ This project uses **GitHub Actions** to automatically verify code quality, secur
 
 CI runs automatically on every push to the `main` branch and on every Pull Request.
 
----
 
 ## What is CI?
 
@@ -19,7 +18,6 @@ Benefits of CI include:
 - Objective "pass/fail" status visible on Pull Requests
 - Quality assurance before code reaches production
 
----
 
 ## Workflow Structure
 
@@ -27,24 +25,8 @@ The CI definition file is [`.github/workflows/ci.yml`](../.github/workflows/ci.y
 
 Five jobs run **in parallel**:
 
-```
-┌─────────────────────────────────────────────────┐
-│              GitHub Actions CI                   │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │ scan_ruby│  │ scan_js  │  │   lint   │       │
-│  │(Brakeman)│  │(importmap│  │(RuboCop) │       │
-│  │          │  │  audit)  │  │          │       │
-│  └──────────┘  └──────────┘  └──────────┘       │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐                      │
-│  │   test   │  │ test_opa │                      │
-│  │ (RSpec)  │  │(opa test)│                      │
-│  └──────────┘  └──────────┘                      │
-└─────────────────────────────────────────────────┘
-```
+![CI Workflow Structure](images/ci_workflow.svg)
 
----
 
 ## Trigger Conditions
 
@@ -60,7 +42,6 @@ on:
 | `push` to `main` | Runs when code is pushed directly to the main branch |
 | `pull_request` | Runs when a Pull Request is created or updated |
 
----
 
 ## Job Details
 
@@ -84,7 +65,6 @@ bundle exec brakeman --no-pager
 
 **Pass condition:** `Security Warnings: 0`.
 
----
 
 ### 2. scan_js — JavaScript Dependency Vulnerability Scan
 
@@ -105,7 +85,6 @@ bin/importmap audit
 
 **Pass condition:** No vulnerabilities reported.
 
----
 
 ### 3. lint — Code Style Check (RuboCop)
 
@@ -142,7 +121,6 @@ bundle exec rubocop
 
 **Pass condition:** Zero offenses.
 
----
 
 ### 4. test — Application Tests (RSpec)
 
@@ -197,7 +175,6 @@ bundle exec rspec
 
 > For detailed test design, see [testing.md](testing.md).
 
----
 
 ### 5. test_opa — OPA Policy Tests
 
@@ -252,7 +229,6 @@ docker exec -i $(docker ps -qf "ancestor=openpolicyagent/opa:latest") opa test /
 
 > For detailed OPA design, see [opa.md](opa.md).
 
----
 
 ## Dependabot — Automated Dependency Updates
 
@@ -267,7 +243,6 @@ The definition file is [`.github/dependabot.yml`](../.github/dependabot.yml).
 
 When Dependabot finds an update, it automatically creates a Pull Request. CI runs on that PR as well, so breaking changes from updates are caught before merging.
 
----
 
 ## Checking CI Results
 
@@ -300,7 +275,6 @@ bundle exec rubocop
 bin/importmap audit
 ```
 
----
 
 ## Job Summary
 

@@ -6,7 +6,6 @@
 
 プロジェクトの概要やセットアップ手順については[ルートREADME](../README.ja.md)を参照してください。
 
----
 
 ## ドキュメント一覧
 
@@ -19,7 +18,6 @@
 | [testing.ja.md](testing.ja.md) | テストまわり。RSpecのセットアップ、テスト構成、設計の考え方 |
 | [ci.ja.md](ci.ja.md) | CI。GitHub Actionsのワークフロー構成、各ジョブの役割、ローカルでの検証方法 |
 
----
 
 ## ダイアグラム
 
@@ -30,7 +28,6 @@
 | [images/architecture.ja.svg](images/architecture.ja.svg) | システム全体のアーキテクチャ |
 | [images/request_flow.ja.svg](images/request_flow.ja.svg) | リクエスト処理フロー |
 
----
 
 ## 読む順番について
 

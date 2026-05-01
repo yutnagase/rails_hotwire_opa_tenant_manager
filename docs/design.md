@@ -15,7 +15,6 @@ An MVP focused on security (multi-tenant isolation, RLS, OPA authorization) and 
 | 2   | Task list    | `/projects/:project_id/tasks`     | Lists tasks under a project              |
 | 3   | Task detail  | `/projects/:project_id/tasks/:id` | Task detail view and status update       |
 
----
 
 ## 2. Technology Stack
 
@@ -38,7 +37,6 @@ An MVP focused on security (multi-tenant isolation, RLS, OPA authorization) and 
 | HTTP stubbing         | webmock                              | Stub external HTTP requests (OPA)    |
 | CI                    | GitHub Actions                       | Brakeman / importmap audit / RuboCop |
 
----
 
 ## 3. Architecture
 
@@ -60,19 +58,12 @@ Three services are started via `docker-compose.yml`:
 
 ![Request flow diagram](images/request_flow.svg)
 
----
 
 ## 4. Database Design
 
 ### 4.1 ER Diagram
 
-```
-tenants 1──* users
-tenants 1──* projects
-tenants 1──* tasks
-projects 1──* tasks
-users 1──* tasks (optional)
-```
+![ER Diagram](images/er_diagram.svg)
 
 ### 4.2 Table Definitions
 
@@ -133,7 +124,6 @@ Role types:
 
 Status types: `todo` / `doing` / `done`
 
----
 
 ## 5. Multi-Tenant Design
 
@@ -160,7 +150,6 @@ Target models: `User`, `Project`, `Task`
 
 `ActsAsTenant.without_tenant` is used only in `db/seeds.rb` to bypass tenant scoping. It is never used in production request paths.
 
----
 
 ## 6. PostgreSQL RLS (Row Level Security) Design
 
@@ -173,7 +162,6 @@ In addition to application-layer isolation via acts_as_tenant, RLS provides defe
 
 > For a detailed explanation of RLS concepts, policies, and implementation, see [rls.md](rls.md).
 
----
 
 ## 7. OPA Authorization Design
 
@@ -191,7 +179,6 @@ OPA handles **vertical access control** — role-based permissions within a tena
 
 > For a detailed explanation of OPA concepts, Rego policies, and integration, see [opa.md](opa.md).
 
----
 
 ## 8. Authentication Design
 
@@ -206,7 +193,6 @@ OAuth2 authentication via Devise + omniauth-auth0.
 
 > For a detailed explanation of the Auth0 flow, Devise configuration, and multi-tenant authentication, see [auth0.md](auth0.md).
 
----
 
 ## 9. Hotwire Design
 
@@ -230,7 +216,6 @@ The status section is wrapped in `turbo_frame_tag "task_status"`. On change, the
 
 The Stimulus controller foundation is configured (`app/javascript/controllers/`). No custom controllers are implemented yet; status changes use inline JS (`onchange: "this.form.requestSubmit()"`).
 
----
 
 ## 10. Routing
 
@@ -251,7 +236,6 @@ end
 
 Only minimal CRUD is exposed for the MVP. create / destroy are currently out of scope.
 
----
 
 ## 11. Directory Structure
 
@@ -327,7 +311,6 @@ rails_hotwire_opa_tenant_manager/
         └── authz.rego      # OPA authorization policy
 ```
 
----
 
 ## 12. Security Design Summary
 
@@ -353,7 +336,6 @@ rails_hotwire_opa_tenant_manager/
 | Role authorization    | Unauthorized operations           | OPA (Rego policies)                  |
 | DB-layer isolation    | Data leaks from application bugs  | PostgreSQL RLS                       |
 
----
 
 ## 13. Environment Variables
 
@@ -372,7 +354,6 @@ rails_hotwire_opa_tenant_manager/
 | SEED_ADMIN_EMAIL_COMPANY_A | Email for Company A initial admin             |
 | SEED_ADMIN_EMAIL_COMPANY_B | Email for Company B initial admin             |
 
----
 
 ## 14. Seed Data
 
@@ -387,7 +368,6 @@ Seed admin users have `seed_admin: true` and their roles cannot be changed.
 Admin email addresses are read from environment variables (`SEED_ADMIN_EMAIL_COMPANY_A`, `SEED_ADMIN_EMAIL_COMPANY_B`).  
 Additional users are created as `guest` on first Auth0 login.
 
----
 
 ## 15. CI/CD
 
@@ -400,7 +380,6 @@ The following jobs run automatically via GitHub Actions:
 | lint      | Code style check with RuboCop                        |
 | test      | RSpec test suite                                     |
 
----
 
 ## 16. Deviations from Original Specification
 

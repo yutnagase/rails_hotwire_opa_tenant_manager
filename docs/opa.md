@@ -4,7 +4,6 @@
 
 This document explains what Open Policy Agent is, why it is useful for authorization, and how this project uses it to enforce role-based access control.
 
----
 
 ## What Is Open Policy Agent?
 
@@ -14,11 +13,8 @@ The key idea: **decouple policy from application code**.
 
 Instead of scattering `if user.admin?` checks throughout your controllers, you define all authorization rules in one place (Rego files) and ask OPA "Is this action allowed?" via a simple HTTP API.
 
-```
-Application  →  "Can member update task?"  →  OPA (Rego)  →  true / false
-```
+![OPA Authorization Flow](images/opa_authz_flow.svg)
 
----
 
 ## Why Use OPA Instead of In-App Authorization?
 
@@ -33,7 +29,6 @@ OPA is especially valuable when:
 - You want to **test policies independently** from application code
 - Multiple services need to share the same authorization logic
 
----
 
 ## Key Concepts
 
@@ -67,7 +62,6 @@ OPA evaluates the input against all rules and returns a JSON response:
 
 A well-written policy starts with `default allow = false`. This means **everything is denied unless a rule explicitly permits it** — a secure-by-default approach.
 
----
 
 ## How OPA Fits Into This Project's Security Model
 
@@ -83,7 +77,6 @@ This project uses a layered security architecture. OPA handles **vertical access
 └──────────────────────────────────────────────────┘
 ```
 
----
 
 ## How This Project Implements OPA
 
@@ -218,7 +211,6 @@ If OPA returns `false`, the controller responds with **HTTP 403 Forbidden** imme
 
 If the user were a `guest` trying to `update`, OPA would return `false` and the controller would respond with 403.
 
----
 
 ## Roles
 
@@ -232,7 +224,7 @@ Roles are stored in the `role` column of the `users` table and assigned at user 
 
 New users created via Auth0 callback are assigned the `guest` role by default. Seed admin users retain the `admin` role and cannot be changed (`seed_admin: true`).
 
----
+
 
 ## Adding or Modifying Policies
 
@@ -250,7 +242,7 @@ allow if {
 
 No application code changes are needed — this is the core benefit of externalized policy.
 
----
+
 
 ## Summary
 
