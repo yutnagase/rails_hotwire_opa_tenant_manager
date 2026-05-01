@@ -27,8 +27,8 @@
 
 | ファイル | 内容 |
 |---|---|
-| [images/architecture.svg](images/architecture.svg) | システム全体のアーキテクチャ |
-| [images/request_flow.svg](images/request_flow.svg) | リクエスト処理フロー |
+| [images/architecture.ja.svg](images/architecture.ja.svg) | システム全体のアーキテクチャ |
+| [images/request_flow.ja.svg](images/request_flow.ja.svg) | リクエスト処理フロー |
 
 ---
 

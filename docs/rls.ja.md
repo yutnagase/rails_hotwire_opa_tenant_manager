@@ -85,7 +85,7 @@ RLSを有効に機能させるには、通常のリクエスト処理中は`NOBY
 
 二層のテナント分離戦略を採用している。
 
-![二層テナント分離](images/rls_dual_layer.svg)
+![二層テナント分離](images/rls_dual_layer.ja.svg)
 
 #### レイヤー1（acts_as_tenant）
 ActiveRecordのクエリに自動で`WHERE tenant_id = ?`を付加し、論理的にテナント管理を行う。
@@ -197,7 +197,7 @@ end
 
 ロール切り替えからクエリ実行、接続クリーンアップまでの流れは以下の図を参照のこと。
 
-![リクエストごとのRLS有効化フロー](images/rls_per_request.svg)
+![リクエストごとのRLS有効化フロー](images/rls_per_request.ja.svg)
 
 ### 多層防御: 各レイヤーの比較
 
