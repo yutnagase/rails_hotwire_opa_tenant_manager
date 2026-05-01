@@ -44,7 +44,7 @@ B2B向けのプロジェクト・タスク管理ツールである。
 
 ### 3.1 全体構成
 
-![アーキテクチャ図](images/architecture.svg)
+![アーキテクチャ図](images/architecture.ja.svg)
 
 ### 3.2 DevContainer構成
 
@@ -58,7 +58,7 @@ B2B向けのプロジェクト・タスク管理ツールである。
 
 ### 3.3 リクエストフロー
 
-![リクエストフロー図](images/request_flow.svg)
+![リクエストフロー図](images/request_flow.ja.svg)
 
 ---
 

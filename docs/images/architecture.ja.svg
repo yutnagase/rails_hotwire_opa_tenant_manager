@@ -11,24 +11,24 @@
   <!-- Background -->
   <rect width="1100" height="620" fill="#fff"/>
 
-  <!-- Browser -->
+  <!-- ブラウザ -->
   <rect x="40" y="200" width="180" height="80" rx="12" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
-  <text x="130" y="233" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">Browser</text>
+  <text x="130" y="233" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">ブラウザ</text>
   <text x="130" y="255" text-anchor="middle" font-size="12" fill="#555">(Hotwire / Turbo)</text>
 
-  <!-- Rails App Container -->
+  <!-- Rails アプリコンテナ -->
   <rect x="320" y="80" width="340" height="380" rx="8" fill="#f5f5f5" stroke="#666" stroke-width="1.5" stroke-dasharray="6,3"/>
-  <text x="490" y="108" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">Rails App (Puma)</text>
+  <text x="490" y="108" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">Rails アプリケーション (Puma)</text>
 
   <!-- Devise + Auth0 -->
   <rect x="340" y="130" width="145" height="50" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
   <text x="412" y="151" text-anchor="middle" font-size="12" fill="#333">Devise + Auth0</text>
-  <text x="412" y="168" text-anchor="middle" font-size="11" fill="#666">(Authentication)</text>
+  <text x="412" y="168" text-anchor="middle" font-size="11" fill="#666">(認証)</text>
 
   <!-- acts_as_tenant -->
   <rect x="500" y="130" width="145" height="50" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
   <text x="572" y="151" text-anchor="middle" font-size="12" fill="#333">acts_as_tenant</text>
-  <text x="572" y="168" text-anchor="middle" font-size="11" fill="#666">(App-layer isolation)</text>
+  <text x="572" y="168" text-anchor="middle" font-size="11" fill="#666">(アプリ層テナント分離)</text>
 
   <!-- ApplicationController -->
   <rect x="355" y="210" width="275" height="60" rx="8" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.5"/>
@@ -48,19 +48,19 @@
   <!-- OPA -->
   <rect x="310" y="480" width="190" height="80" rx="12" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
   <text x="405" y="510" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">OPA</text>
-  <text x="405" y="530" text-anchor="middle" font-size="12" fill="#555">(Policy Engine)</text>
+  <text x="405" y="530" text-anchor="middle" font-size="12" fill="#555">(ポリシーエンジン)</text>
   <text x="405" y="548" text-anchor="middle" font-size="11" fill="#888">:8181</text>
 
   <!-- authz.rego -->
   <path d="M555,490 L660,490 L660,555 L540,555 L540,505 L555,490 Z" fill="#d5e8d4" stroke="#82b366" stroke-width="1.5"/>
   <text x="600" y="520" text-anchor="middle" font-size="11" fill="#333">authz.rego</text>
-  <text x="600" y="537" text-anchor="middle" font-size="11" fill="#555">(Rego Policy)</text>
+  <text x="600" y="537" text-anchor="middle" font-size="11" fill="#555">(Rego ポリシー)</text>
 
-  <!-- PostgreSQL Container -->
+  <!-- PostgreSQL コンテナ -->
   <rect x="740" y="130" width="300" height="340" rx="8" fill="#f5f5f5" stroke="#666" stroke-width="1.5" stroke-dasharray="6,3"/>
   <text x="890" y="158" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">PostgreSQL 17</text>
 
-  <!-- Table: tenants (cylinder) -->
+  <!-- テーブル: tenants (円柱) -->
   <ellipse cx="810" cy="215" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <rect x="770" y="185" width="80" height="30" fill="#f8cecc" stroke="none"/>
   <line x1="770" y1="185" x2="770" y2="215" stroke="#b85450" stroke-width="1.5"/>
@@ -68,7 +68,7 @@
   <ellipse cx="810" cy="185" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <text x="810" y="206" text-anchor="middle" font-size="11" fill="#333">tenants</text>
 
-  <!-- Table: users (cylinder) -->
+  <!-- テーブル: users (円柱) -->
   <ellipse cx="930" cy="215" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <rect x="890" y="185" width="80" height="30" fill="#f8cecc" stroke="none"/>
   <line x1="890" y1="185" x2="890" y2="215" stroke="#b85450" stroke-width="1.5"/>
@@ -76,7 +76,7 @@
   <ellipse cx="930" cy="185" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <text x="930" y="206" text-anchor="middle" font-size="11" fill="#333">users</text>
 
-  <!-- Table: projects (cylinder) -->
+  <!-- テーブル: projects (円柱) -->
   <ellipse cx="810" cy="278" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <rect x="770" y="248" width="80" height="30" fill="#f8cecc" stroke="none"/>
   <line x1="770" y1="248" x2="770" y2="278" stroke="#b85450" stroke-width="1.5"/>
@@ -84,7 +84,7 @@
   <ellipse cx="810" cy="248" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <text x="810" y="269" text-anchor="middle" font-size="11" fill="#333">projects</text>
 
-  <!-- Table: tasks (cylinder) -->
+  <!-- テーブル: tasks (円柱) -->
   <ellipse cx="930" cy="278" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <rect x="890" y="248" width="80" height="30" fill="#f8cecc" stroke="none"/>
   <line x1="890" y1="248" x2="890" y2="278" stroke="#b85450" stroke-width="1.5"/>
@@ -92,29 +92,29 @@
   <ellipse cx="930" cy="248" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
   <text x="930" y="269" text-anchor="middle" font-size="11" fill="#333">tasks</text>
 
-  <!-- RLS label -->
+  <!-- RLS ラベル -->
   <rect x="765" y="300" width="250" height="55" rx="4" fill="#f8cecc" stroke="#b85450" stroke-width="1"/>
-  <text x="890" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">Row Level Security</text>
-  <text x="890" y="338" text-anchor="middle" font-size="11" fill="#555">tenant_id based row filtering</text>
+  <text x="890" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">RLS 有効</text>
+  <text x="890" y="338" text-anchor="middle" font-size="11" fill="#555">(tenant_id による行フィルタリング)</text>
 
-  <!-- DB Roles -->
+  <!-- DB ロール -->
   <rect x="765" y="370" width="250" height="90" rx="4" fill="#e8e8e8" stroke="#999" stroke-width="1"/>
-  <text x="890" y="388" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">DB Roles</text>
-  <text x="775" y="406" font-size="10" fill="#333">postgres : for migrations</text>
-  <text x="775" y="421" font-size="10" fill="#888">(superuser / bypasses RLS)</text>
-  <text x="775" y="436" font-size="10" fill="#333">rails_user : for app requests</text>
-  <text x="775" y="451" font-size="10" fill="#888">(NOBYPASSRLS / RLS enforced)</text>
+  <text x="890" y="388" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">DB ロール</text>
+  <text x="775" y="406" font-size="10" fill="#333">postgres : マイグレーション実行用</text>
+  <text x="775" y="421" font-size="10" fill="#888">(スーパーユーザー / RLS バイパス)</text>
+  <text x="775" y="436" font-size="10" fill="#333">rails_user : アプリのリクエスト処理用</text>
+  <text x="775" y="451" font-size="10" fill="#888">(NOBYPASSRLS / RLS 適用対象)</text>
 
-  <!-- Security Layers -->
+  <!-- セキュリティレイヤー -->
   <rect x="40" y="380" width="260" height="110" rx="8" fill="#f5f5f5" stroke="#666" stroke-width="1"/>
-  <text x="50" y="400" font-size="11" fill="#333">Layer 1: Subdomain → Tenant identification</text>
-  <text x="50" y="418" font-size="11" fill="#333">Layer 2: Devise + Auth0 authentication</text>
-  <text x="50" y="436" font-size="11" fill="#333">Layer 3: acts_as_tenant (app-layer isolation)</text>
-  <text x="50" y="454" font-size="11" fill="#333">Layer 4: OPA role-based authorization</text>
-  <text x="50" y="472" font-size="11" fill="#333">Layer 5: PostgreSQL RLS (DB-layer isolation)</text>
+  <text x="50" y="400" font-size="11" fill="#333">レイヤー1: サブドメイン → テナント識別</text>
+  <text x="50" y="418" font-size="11" fill="#333">レイヤー2: Devise + Auth0 認証</text>
+  <text x="50" y="436" font-size="11" fill="#333">レイヤー3: acts_as_tenant (アプリ層分離)</text>
+  <text x="50" y="454" font-size="11" fill="#333">レイヤー4: OPA ロールベース認可</text>
+  <text x="50" y="472" font-size="11" fill="#333">レイヤー5: PostgreSQL RLS (DB層分離)</text>
 
-  <!-- Arrows -->
-  <!-- Browser → Rails -->
+  <!-- 矢印 -->
+  <!-- ブラウザ → Rails -->
   <line x1="220" y1="240" x2="318" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
   <text x="269" y="232" text-anchor="middle" font-size="10" fill="#555">HTTP</text>
   <text x="269" y="245" text-anchor="middle" font-size="10" fill="#555">(Turbo Drive)</text>

@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 650" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+    <marker id="arrow-dash" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#999"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6c8ebf"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="650" fill="#fff"/>
+
+  <!-- Title -->
+  <text x="550" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">Architecture Overview</text>
+
+  <!-- Browser -->
+  <rect x="40" y="220" width="180" height="80" rx="12" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="130" y="253" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">Browser</text>
+  <text x="130" y="275" text-anchor="middle" font-size="12" fill="#555">(Hotwire / Turbo)</text>
+
+  <!-- Auth0 (External Service) -->
+  <rect x="40" y="60" width="180" height="80" rx="12" fill="#fce5cd" stroke="#e69138" stroke-width="2"/>
+  <text x="130" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">Auth0</text>
+  <text x="130" y="108" text-anchor="middle" font-size="11" fill="#555">(External Auth Service)</text>
+  <text x="130" y="125" text-anchor="middle" font-size="11" fill="#888">OAuth 2.0 / OIDC</text>
+
+  <!-- Arrow: Browser ↔ Auth0 -->
+  <line x1="100" y1="220" x2="100" y2="142" stroke="#e69138" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="160" y1="142" x2="160" y2="220" stroke="#e69138" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="50" y="185" font-size="10" fill="#e69138">Login</text>
+  <text x="165" y="185" font-size="10" fill="#e69138">Callback</text>
+
+  <!-- Rails App Container -->
+  <rect x="320" y="80" width="340" height="430" rx="8" fill="#f5f5f5" stroke="#666" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="490" y="108" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">Rails App</text>
+  <text x="490" y="126" text-anchor="middle" font-size="11" fill="#888">Web Server: Puma (Rails default)</text>
+
+  <!-- Devise + OmniAuth -->
+  <rect x="340" y="145" width="145" height="50" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="412" y="166" text-anchor="middle" font-size="12" fill="#333">Devise + OmniAuth</text>
+  <text x="412" y="183" text-anchor="middle" font-size="11" fill="#666">(Session Mgmt)</text>
+
+  <!-- acts_as_tenant -->
+  <rect x="500" y="145" width="145" height="50" rx="8" fill="#fff2cc" stroke="#d6b656" stroke-width="1.5"/>
+  <text x="572" y="166" text-anchor="middle" font-size="12" fill="#333">acts_as_tenant</text>
+  <text x="572" y="183" text-anchor="middle" font-size="11" fill="#666">(Tenant Scoping)</text>
+
+  <!-- ApplicationController -->
+  <rect x="340" y="220" width="305" height="80" rx="8" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.5"/>
+  <text x="492" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">ApplicationController</text>
+  <text x="492" y="257" text-anchor="middle" font-size="10" fill="#555">scope_to_tenant: Resolve tenant &amp; switch DB role</text>
+  <text x="492" y="272" text-anchor="middle" font-size="10" fill="#555">authorize_with_opa: Query OPA for authorization</text>
+  <text x="492" y="287" text-anchor="middle" font-size="10" fill="#888">Runs on every request (around_action / before_action)</text>
+
+  <!-- OpaClient -->
+  <rect x="340" y="325" width="140" height="50" rx="8" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.5"/>
+  <text x="410" y="346" text-anchor="middle" font-size="12" fill="#333">OpaClient</text>
+  <text x="410" y="363" text-anchor="middle" font-size="11" fill="#555">(HTTP)</text>
+
+  <!-- SET ROLE -->
+  <rect x="505" y="325" width="140" height="50" rx="8" fill="#e1d5e7" stroke="#9673a6" stroke-width="1.5"/>
+  <text x="575" y="346" text-anchor="middle" font-size="12" fill="#333">SET ROLE</text>
+  <text x="575" y="363" text-anchor="middle" font-size="11" fill="#555">rails_user</text>
+
+  <!-- Cleanup (ensure) -->
+  <rect x="340" y="400" width="305" height="45" rx="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <text x="492" y="418" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">Cleanup (ensure) — Always runs after each request</text>
+  <text x="492" y="436" text-anchor="middle" font-size="10" fill="#888">Returns DB connection to pool in a clean state</text>
+
+  <!-- OPA -->
+  <rect x="310" y="510" width="190" height="80" rx="12" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <text x="405" y="540" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">OPA</text>
+  <text x="405" y="560" text-anchor="middle" font-size="12" fill="#555">(Policy Engine)</text>
+  <text x="405" y="578" text-anchor="middle" font-size="11" fill="#888">:8181</text>
+
+  <!-- authz.rego -->
+  <path d="M555,520 L660,520 L660,585 L540,585 L540,535 L555,520 Z" fill="#d5e8d4" stroke="#82b366" stroke-width="1.5"/>
+  <text x="600" y="550" text-anchor="middle" font-size="11" fill="#333">authz.rego</text>
+  <text x="600" y="567" text-anchor="middle" font-size="11" fill="#555">(Rego Policy)</text>
+
+  <!-- PostgreSQL Container -->
+  <rect x="740" y="130" width="300" height="340" rx="8" fill="#f5f5f5" stroke="#666" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="890" y="158" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">PostgreSQL 17</text>
+
+  <!-- Table: tenants (cylinder) -->
+  <ellipse cx="810" cy="215" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <rect x="770" y="185" width="80" height="30" fill="#f8cecc" stroke="none"/>
+  <line x1="770" y1="185" x2="770" y2="215" stroke="#b85450" stroke-width="1.5"/>
+  <line x1="850" y1="185" x2="850" y2="215" stroke="#b85450" stroke-width="1.5"/>
+  <ellipse cx="810" cy="185" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <text x="810" y="206" text-anchor="middle" font-size="11" fill="#333">tenants</text>
+
+  <!-- Table: users (cylinder) -->
+  <ellipse cx="930" cy="215" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <rect x="890" y="185" width="80" height="30" fill="#f8cecc" stroke="none"/>
+  <line x1="890" y1="185" x2="890" y2="215" stroke="#b85450" stroke-width="1.5"/>
+  <line x1="970" y1="185" x2="970" y2="215" stroke="#b85450" stroke-width="1.5"/>
+  <ellipse cx="930" cy="185" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <text x="930" y="206" text-anchor="middle" font-size="11" fill="#333">users</text>
+
+  <!-- Table: projects (cylinder) -->
+  <ellipse cx="810" cy="278" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <rect x="770" y="248" width="80" height="30" fill="#f8cecc" stroke="none"/>
+  <line x1="770" y1="248" x2="770" y2="278" stroke="#b85450" stroke-width="1.5"/>
+  <line x1="850" y1="248" x2="850" y2="278" stroke="#b85450" stroke-width="1.5"/>
+  <ellipse cx="810" cy="248" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <text x="810" y="269" text-anchor="middle" font-size="11" fill="#333">projects</text>
+
+  <!-- Table: tasks (cylinder) -->
+  <ellipse cx="930" cy="278" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <rect x="890" y="248" width="80" height="30" fill="#f8cecc" stroke="none"/>
+  <line x1="890" y1="248" x2="890" y2="278" stroke="#b85450" stroke-width="1.5"/>
+  <line x1="970" y1="248" x2="970" y2="278" stroke="#b85450" stroke-width="1.5"/>
+  <ellipse cx="930" cy="248" rx="40" ry="8" fill="#f8cecc" stroke="#b85450" stroke-width="1.5"/>
+  <text x="930" y="269" text-anchor="middle" font-size="11" fill="#333">tasks</text>
+
+  <!-- RLS label -->
+  <rect x="765" y="300" width="250" height="55" rx="4" fill="#f8cecc" stroke="#b85450" stroke-width="1"/>
+  <text x="890" y="320" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">Row Level Security</text>
+  <text x="890" y="338" text-anchor="middle" font-size="11" fill="#555">tenant_id based row filtering</text>
+
+  <!-- DB Roles -->
+  <rect x="765" y="370" width="250" height="90" rx="4" fill="#e8e8e8" stroke="#999" stroke-width="1"/>
+  <text x="890" y="388" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">DB Roles</text>
+  <text x="775" y="406" font-size="10" fill="#333">postgres : for migrations</text>
+  <text x="775" y="421" font-size="10" fill="#888">(superuser / bypasses RLS)</text>
+  <text x="775" y="436" font-size="10" fill="#333">rails_user : for app requests</text>
+  <text x="775" y="451" font-size="10" fill="#888">(NOBYPASSRLS / RLS enforced)</text>
+
+  <!-- Arrows -->
+  <!-- Browser → Rails -->
+  <line x1="220" y1="260" x2="318" y2="260" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="269" y="252" text-anchor="middle" font-size="10" fill="#555">HTTP</text>
+  <text x="269" y="270" text-anchor="middle" font-size="10" fill="#555">(Turbo Drive)</text>
+
+  <!-- Auth0 → Rails (callback) -->
+  <line x1="220" y1="100" x2="338" y2="165" stroke="#e69138" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+  <text x="280" y="100" text-anchor="middle" font-size="10" fill="#e69138">OAuth callback</text>
+
+  <!-- SET ROLE → PostgreSQL -->
+  <line x1="630" y1="350" x2="758" y2="280" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="700" y="325" text-anchor="middle" font-size="10" fill="#555">SQL</text>
+  <text x="700" y="335" text-anchor="middle" font-size="10" fill="#555">(SET ROLE)</text>
+
+  <!-- OpaClient → OPA -->
+  <line x1="410" y1="375" x2="405" y2="508" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="445" y="476" text-anchor="middle" font-size="10" fill="#555">HTTP POST</text>
+  <text x="445" y="486" text-anchor="middle" font-size="10" fill="#555">(JSON)</text>
+
+  <!-- OPA → authz.rego -->
+  <line x1="500" y1="550" x2="538" y2="550" stroke="#999" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow-dash)"/>
+
+  <!-- Security Layers Legend -->
+  <rect x="40" y="400" width="260" height="130" rx="8" fill="#f5f5f5" stroke="#666" stroke-width="1"/>
+  <text x="170" y="420" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">Security Layers</text>
+  <text x="50" y="440" font-size="11" fill="#333">1. Subdomain → Tenant identification</text>
+  <text x="50" y="458" font-size="11" fill="#333">2. Auth0 → Authentication</text>
+  <text x="50" y="476" font-size="11" fill="#333">3. acts_as_tenant → App-layer isolation</text>
+  <text x="50" y="494" font-size="11" fill="#333">4. OPA → Role-based authorization</text>
+  <text x="50" y="512" font-size="11" fill="#333">5. PostgreSQL RLS → DB-layer isolation</text>
+</svg>
