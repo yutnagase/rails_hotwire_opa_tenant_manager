@@ -4,7 +4,6 @@
 
 This document explains how authentication works in this project using Devise and Auth0, and how it integrates with the multi-tenant architecture.
 
----
 
 ## What Is Auth0?
 
@@ -18,7 +17,6 @@ Auth0 supports:
 
 In this project, Auth0 is used **solely for authentication (identity verification)**. Role management is handled entirely within Rails.
 
----
 
 ## Design Principles
 
@@ -30,7 +28,6 @@ In this project, Auth0 is used **solely for authentication (identity verificatio
 
 Auth0 does not manage roles, permissions, or tenant membership. It only verifies that the user is who they claim to be (e.g. via Google OAuth). All business-level access control is managed within the Rails application.
 
----
 
 ## How Auth0 Authentication Works (OAuth2 Flow)
 
@@ -47,7 +44,6 @@ Auth0 does not manage roles, permissions, or tenant membership. It only verifies
 
 This is a standard **OAuth2 Authorization Code flow**. The Rails application never sees the user's password — Auth0 handles all credential verification.
 
----
 
 ## User Lifecycle
 
@@ -77,7 +73,6 @@ This allows seed admin users to be linked to their Auth0 identity on first login
 | New user (first Auth0 login) | `guest` |
 | Role change by admin | Admin can change other users' roles (future feature) |
 
----
 
 ## Key Concepts
 
@@ -95,7 +90,6 @@ OmniAuth is a Rack middleware that standardizes multi-provider authentication. T
 
 The `omniauth-rails_csrf_protection` gem is required to bridge Rails CSRF tokens with OmniAuth's middleware-level CSRF verification (required since OmniAuth 2.x).
 
----
 
 ## How This Project Implements Authentication
 
@@ -281,7 +275,6 @@ end
 
 Unauthenticated users are always redirected to the login page, which shows the appropriate login method based on Auth0 configuration.
 
----
 
 ## Multi-Tenant Authentication Flow
 
@@ -310,7 +303,6 @@ The subdomain plays a critical role in connecting authentication to the correct 
 
 This ensures that even if two tenants have a user with the same email, they are treated as **separate users** because `from_omniauth` scopes the lookup by `tenant`.
 
----
 
 ## Environment Variables
 
@@ -324,7 +316,6 @@ This ensures that even if two tenants have a user with the same email, they are 
 
 These are set in `.devcontainer/.env` (git-ignored) and loaded via `docker-compose.yml`.
 
----
 
 ## Auth0 Setup Requirements
 
@@ -339,7 +330,6 @@ On the Auth0 dashboard, configure the following for your application:
 
 Enable at least one Social Connection (e.g. Google) under Authentication → Social.
 
----
 
 ## Development Without Auth0
 
@@ -351,7 +341,6 @@ When Auth0 environment variables are not set (or left at placeholder values):
 
 This makes it easy to get started immediately after running `bin/rails db:seed`.
 
----
 
 ## Summary
 

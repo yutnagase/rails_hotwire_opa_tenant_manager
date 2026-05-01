@@ -6,7 +6,6 @@ This directory contains detailed technical documentation for the Multi-Tenant Ta
 
 For a project overview and quick start guide, see the [root README](../README.md).
 
----
 
 ## Documents
 
@@ -19,7 +18,6 @@ For a project overview and quick start guide, see the [root README](../README.md
 | [testing.md](testing.md) | Testing — RSpec setup, test structure, and design decisions |
 | [ci.md](ci.md) | CI — GitHub Actions workflow, each job's purpose, and local verification |
 
----
 
 ## Diagrams
 
@@ -30,7 +28,6 @@ Architecture and request flow diagrams are stored in `docs/images/`:
 | [images/architecture.svg](images/architecture.svg) | Overall system architecture |
 | [images/request_flow.svg](images/request_flow.svg) | Request processing flow |
 
----
 
 ## Recommended Reading Order
 

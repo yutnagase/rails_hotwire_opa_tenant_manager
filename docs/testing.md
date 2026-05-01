@@ -4,7 +4,6 @@
 
 This project uses **RSpec** as the test framework.
 
----
 
 ## Technology Stack
 
@@ -15,7 +14,6 @@ This project uses **RSpec** as the test framework.
 | Matchers        | shoulda-matchers  | One-liner tests for validations/associations |
 | HTTP stubbing   | webmock           | Stub external HTTP requests (OPA, etc.)    |
 
----
 
 ## Directory Structure
 
@@ -39,7 +37,6 @@ spec/
 └── spec_helper.rb
 ```
 
----
 
 ## Running Tests
 
@@ -59,7 +56,6 @@ bundle exec rspec spec/models/user_spec.rb
 bundle exec rspec spec/models/user_spec.rb:30
 ```
 
----
 
 ## Test Design Decisions
 
@@ -86,7 +82,6 @@ In the test environment, the `SET ROLE` / `RESET ROLE` commands used for RLS are
 
 Request specs use `Devise::Test::IntegrationHelpers` (included for `type: :request`) to call `sign_in` directly, bypassing the Auth0 OAuth flow.
 
----
 
 ## Test Coverage Summary
 

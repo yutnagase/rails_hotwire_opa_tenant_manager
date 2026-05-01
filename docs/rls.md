@@ -4,7 +4,7 @@
 
 This document explains what PostgreSQL Row Level Security is, why it matters for multi-tenant applications, and how this project implements it.
 
----
+
 
 ## What Is Row Level Security?
 
@@ -19,7 +19,7 @@ Think of it this way:
 | "You can read the `tasks` table" | "You can read only **your tenant's** rows in the `tasks` table" |
 | Filtering depends on application code | Filtering is enforced by the database engine |
 
----
+
 
 ## Why RLS Matters for Multi-Tenant Applications
 
@@ -35,7 +35,7 @@ Application bug → sends unscoped query → PostgreSQL RLS blocks unauthorized 
 
 Even if the application makes a mistake, the database will never return rows that violate the policy.
 
----
+
 
 ## Key Concepts
 
@@ -71,7 +71,7 @@ PostgreSQL superusers and roles with the `BYPASSRLS` attribute **skip all RLS po
 
 For RLS to be effective, the application must use a role with `NOBYPASSRLS` during normal request processing.
 
----
+
 
 ## How This Project Implements RLS
 
@@ -194,7 +194,7 @@ The following sequence diagram shows the full lifecycle of a single request, fro
 | Bug in query builder / scope | ❌ Leaks data | ✅ Blocked by DB |
 | Direct DB console access (as `rails_user`) | ❌ No protection | ✅ Blocked by DB |
 
----
+
 
 ## Summary
 
