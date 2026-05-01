@@ -44,29 +44,23 @@ The application is intentionally minimal in features, but strong in **architectu
 
 ## Architecture Overview
 
-```
-Browser (Hotwire)
-        │
-        ▼
-Rails Application (Puma)
-        │
-        ├── Authorization Decision → OPA (Rego Policies)
-        │
-        ▼
-PostgreSQL (Row Level Security enabled)
-```
+![Architecture Overview](docs/images/architecture_overview.svg)
+
+Incoming requests are handled by the Rails application (using [Puma](https://puma.io/), the default Rails web server).  
+Authentication is delegated to Auth0 (an external identity service), and authorization decisions are made by querying OPA (a policy engine).  
+PostgreSQL Row Level Security (RLS) enforces tenant data isolation at the database level.
 
 
 
 ## Security Layers
 
 | Layer                    | Implementation                          |
-|  |  |
-| Tenant identification    | Subdomain-based (`company-a.localhost`) |
-| Authentication           | Devise + Auth0                          |
-| App-layer isolation      | acts_as_tenant (automatic scoping)      |
-| Role-based authorization | OPA (admin / member / guest)            |
-| DB-layer isolation       | PostgreSQL RLS with `SET ROLE`          |
+| --- | --- |
+| Tenant identification    | Subdomain-based tenant isolation (e.g. `company-a.localhost`, `company-b.localhost` — the subdomain portion identifies the tenant) |
+| Authentication           | Delegated to Auth0 for identity verification; Devise manages Rails-side sessions |
+| App-layer isolation      | [acts_as_tenant](https://github.com/ErwinM/acts_as_tenant) gem automatically scopes ActiveRecord queries to the current tenant |
+| Role-based authorization | Access control rules defined in [OPA](https://www.openpolicyagent.org/) (admin / member / guest roles) |
+| DB-layer isolation       | PostgreSQL RLS blocks access to other tenants' rows at the database level |
 
 > For detailed documentation, see the [docs/](docs/README.md) directory.
 
@@ -187,25 +181,26 @@ Access the application via subdomains:
 
 ## Seed Data
 
+Running `bin/rails db:seed` populates the following initial data:
+
 | Tenant    | Subdomain | Users          |
-|  |  | -- |
+| --- | --- | --- |
 | Company A | company-a | Admin A (admin) |
 | Company B | company-b | Admin B (admin) |
 
 Seed admin users are created with `seed_admin: true` and their roles cannot be changed.  
-Additional users are created automatically as `guest` on first Auth0 login, and admins can change their roles.
+Additional users are created automatically with the `guest` role on first Auth0 login, and admins can change their roles.
 
 
 
 ## Learning & Design Focus
 
-This project intentionally focuses on:
+This project intentionally focuses on the following themes:
 
-- Correct and safe usage of PostgreSQL RLS
-- Separation of authorization concerns via OPA
-- Role-based access control without controller coupling
-- Safe handling of database connection pooling when using `SET ROLE`
-- Reproducible local development environments with Dev Containers
+- **Tenant isolation with PostgreSQL RLS** — Physically blocking access to other tenants' data at the database level
+- **Externalizing authorization logic to OPA** — Separating authorization rules from Controller classes into OPA's Rego policy files
+- **Safe connection pool management with `SET ROLE`** — Switching DB roles per request via `around_action` + `ensure` block, ensuring no contaminated connections remain in the pool (a custom implementation pattern, not a library)
+- **Unified development environment with Dev Containers** — Fully reproducible setup including Rails, PostgreSQL, and OPA via Docker Compose
 
 Feature scope is kept intentionally small to make the architecture easier to understand.
 
