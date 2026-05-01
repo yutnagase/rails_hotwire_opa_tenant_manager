@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](testing.ja.md)
+
 # Testing
 
 This project uses **RSpec** as the test framework.

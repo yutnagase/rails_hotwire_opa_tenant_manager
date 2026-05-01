@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](opa.ja.md)
+
 # Open Policy Agent (OPA) Authorization
 
 This document explains what Open Policy Agent is, why it is useful for authorization, and how this project uses it to enforce role-based access control.

@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](README.ja.md)
+
 # Documentation
 
 This directory contains detailed technical documentation for the Multi-Tenant Task Management App.

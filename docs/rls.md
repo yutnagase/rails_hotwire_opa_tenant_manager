@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](rls.ja.md)
+
 # PostgreSQL Row Level Security (RLS)
 
 This document explains what PostgreSQL Row Level Security is, why it matters for multi-tenant applications, and how this project implements it.

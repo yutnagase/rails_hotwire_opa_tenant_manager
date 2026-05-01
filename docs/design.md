@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](design.ja.md)
+
 # Design Document: Rails Hotwire × acts_as_tenant × OPA Multi-Tenant Task Management App
 
 ## 1. Project Overview

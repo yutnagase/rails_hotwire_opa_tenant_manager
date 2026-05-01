@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](auth0.ja.md)
+
 # Authentication with Auth0
 
 This document explains how authentication works in this project using Devise and Auth0, and how it integrates with the multi-tenant architecture.

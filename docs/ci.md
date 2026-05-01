@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](ci.ja.md)
+
 # CI (Continuous Integration)
 
 This project uses **GitHub Actions** to automatically verify code quality, security, and correctness.
