@@ -1,3 +1,5 @@
+> 🇯🇵 [日本語版はこちら](README.ja.md)
+
 # Multi-Tenant Task Management App (Rails, Hotwire, RLS, OPA, Auth0)
 
 This repository contains a **B2B-oriented project and task management MVP** built with Ruby on Rails.  
