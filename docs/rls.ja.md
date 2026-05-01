@@ -1,63 +1,62 @@
 > 🇺🇸 [English version here](rls.md)
 
-# PostgreSQL Row Level Security (RLS)
+# PostgreSQL Row Level Security(RLS)
 
-このドキュメントでは、PostgreSQL の Row Level Security とは何か、マルチテナントアプリケーションにおいてなぜ重要なのか、そして本プロジェクトでどのように実装しているか記載しています。
+PostgreSQLのRow Level Securityとは何か、マルチテナントアプリケーションにおいてなぜ重要なのか、本プロジェクトでどのように実装しているかについて記載する。
 
 ---
 
-## Row Level Security とは？
+## Row Level Securityとは
 
-Row Level Security (RLS) は、テーブル内でデータベースユーザーがアクセスできる行を制御する機能です。
-本プロジェクトではPostgreSQLで構築しています
-PostgreSQL仕様での記載の為、他データベースの仕様とは異なる記載となるかもしれませんが、ご了承ください
+Row Level Security(RLS)は、テーブル内でデータベースユーザーがアクセスできる行を制御するPostgreSQLの機能である。
+本プロジェクトはPostgreSQLで構築しているため、以下はPostgreSQL前提の記載となる。他のデータベースでは仕様が異なる可能性がある点はご了承いただきたい。
 
-RLSがない場合、アクセス制御はアプリケーション機能でテーブルレベルで構築します
-許可されたユーザーは物理的には、全行を参照できてしまいます。
-RLSを使用すると、データベース自体が行レベルのフィルタリングを強制して、ユーザーに割り当てたポリシー内でのレコードのみ、ユーザーに表示します。
+RLSがない場合、アクセス制御はアプリケーション側でテーブルレベルで構築することになる。
+許可されたユーザーは物理的には全行を参照できてしまう。
+RLSを使用すると、データベース自体が行レベルのフィルタリングを強制するため、ポリシーに合致するレコードのみがユーザーに表示される。
 
-| RLS なし | RLS あり |
+| RLSなし | RLSあり |
 |---|---|
-| 「`tasks` テーブル全行読める」 | 「`tasks` テーブルの自テナントレコードのみ読める」 |
+| 「`tasks`テーブルの全行が読める」 | 「`tasks`テーブルの自テナントのレコードのみ読める」 |
 | フィルタリングはアプリケーションコードに依存 | フィルタリングはデータベースエンジンが強制 |
 
 ---
 
 ## マルチテナントアプリケーションにおけるRLSの重要性
 
-マルチテナントアプリケーションでは、複数の組織（テナント）が同じデータベーステーブルを共有します。一般的なアプローチは、全テーブルに `tenant_id` カラムを追加し、`WHERE tenant_id = ?` でクエリをフィルタリングすることです。
-但し、以下の問題点が有ります
+マルチテナントアプリケーションでは、複数の組織（テナント）が同じデータベーステーブルを共有する。一般的なアプローチは全テーブルに`tenant_id`カラムを追加し、`WHERE tenant_id = ?`でクエリをフィルタリングすることである。
 
-問題点: このフィルタリングはアプリケーション層に依存してしまっている。
-開発者が `WHERE` 句を忘れたり、スコーピングなしの生SQLを書いたり、クエリビルダーにバグを入れたりすると、他テナントのデータを参照出来てしまい、情報漏洩する可能性があります。
+ただし、以下の問題点がある。
 
-RLS はデータベースレベルのセーフティネットとして機能しますので、上記問題点を解決出来ます
+このフィルタリングはアプリケーション層に依存してしまっている、という点である。
+開発者が`WHERE`句を付け忘れたり、スコーピングなしの生SQLを書いたり、クエリビルダーにバグを入れたりすると、他テナントのデータが参照可能となり、情報漏洩につながる可能性がある。
+
+RLSはデータベースレベルのセーフティネットとして機能するため、この問題を解決できる。
 
 ```
-アプリケーションバグ → スコープが無いSQLを実行 → RLSが物理的に他テナントのレコードをブロック
+アプリケーションのバグ → スコープなしのSQLを実行 → RLSが物理的に他テナントのレコードをブロック
 ```
 
-アプリケーションにバグが有った場合でも、データベースはポリシーに違反するレコードを返さない
+アプリケーションにバグがあったとしても、データベースはポリシーに違反するレコードを返さない。
 
 ---
 
-## 概要
+## 基本的な仕組み
 
 ### 1. テーブル単位でRLSを有効化
 
-RLSはデフォルトで無効ですので、テーブルごとに明示的に有効化する必要があります：
+RLSはデフォルトで無効のため、テーブルごとに明示的に有効化する必要がある。
 
 ```sql
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 ```
 
-有効化すると、非スーパーユーザーロールに対してデフォルトで全行が非表示になります
-アクセスを許可するポリシーを作成しないとアクセスできません
+有効化すると、非スーパーユーザーロールに対してデフォルトで全行が非表示となる。
+アクセスを許可するポリシーを作成しなければ何も参照できない。
 
 ### 2. ポリシー
 
-ポリシーは、ユーザーがどの行を参照・変更できるかを定義します。
-例：
+ポリシーにより、ユーザーがどの行を参照・変更できるかを定義する。
 
 ```sql
 CREATE POLICY tasks_tenant_isolation ON tasks
@@ -65,41 +64,41 @@ CREATE POLICY tasks_tenant_isolation ON tasks
   USING (tenant_id = current_setting('app.current_tenant_id')::bigint);
 ```
 
-ALL（SELECT, INSERT, UPDATE, DELETE）について、`tenant_id` がセッション変数 `app.current_tenant_id` と一致する行のみアクセスを許可する。
+ALL（SELECT, INSERT, UPDATE, DELETE）について、`tenant_id`がセッション変数`app.current_tenant_id`と一致する行のみアクセスを許可する。
 
 ### 3. セッション変数
 
-PostgreSQL では `SET` でカスタムセッションレベル変数を設定し、`current_setting()` で読み取ることができます。
-本プロジェクトでは `app.current_tenant_id` を使用して、ログイン中ユーザーが所属するテナントのID(`tenant_id`)をアプリケーションからデータベースセッションに渡しています。そうする事で、データベースがRLSポリシーを参照できるようにしています。
+PostgreSQLでは`SET`でカスタムのセッションレベル変数を設定し、`current_setting()`で読み取ることができる。
+本プロジェクトでは`app.current_tenant_id`を使用して、ログイン中ユーザーの所属テナントIDをアプリケーションからデータベースセッションに渡している。これによりデータベースがRLSポリシーを参照できるようになる。
 
-### 4. データベースロールと BYPASSRLS
+### 4. データベースロールとBYPASSRLS
 
-PostgreSQL のスーパーユーザーと `BYPASSRLS` 属性を持つロールは全てのRLSポリシー制御からスキップ出来ます。Railsにおいては管理操作（マイグレーションなど）を行う必要が有ります。設計上の仕様で制限なく実行させなくてはならない為
+PostgreSQLのスーパーユーザーや`BYPASSRLS`属性を持つロールはRLSポリシーを素通りできる。Railsではマイグレーションなどの管理操作で制限なく実行する必要があるため、これが必要となる。
 
-RLSを有効に機能させるには、通常のリクエスト処理中に `NOBYPASSRLS` のロールを使用する必要があります。
+RLSを有効に機能させるには、通常のリクエスト処理中は`NOBYPASSRLS`のロールを使用しなければならない。
 
 ---
 
-## 本プロジェクトでのRLS実装
+## 本プロジェクトでの実装
 
 ### アーキテクチャ概要
 
-本プロジェクトでは二層テナント分離戦略を使用：
+二層のテナント分離戦略を採用している。
 
 ![二層テナント分離](images/rls_dual_layer.svg)
 
-#### レイヤー1（`acts_as_tenant`）
-ActiveRecord のクエリに自動で `WHERE tenant_id = ?` を付加して論理的にテナント管理する。
+#### レイヤー1（acts_as_tenant）
+ActiveRecordのクエリに自動で`WHERE tenant_id = ?`を付加し、論理的にテナント管理を行う。
 
 #### レイヤー2（PostgreSQL RLS）
-最後の防衛線としての機能
-生のSQLやクエリビルダーのバグで「レイヤー1」を突破されても、データベースレベルで他のテナントレコードを参照出来ない様に、行フィルタリングを行う
+最後の防衛線としての機能を担う。
+生SQLやクエリビルダーのバグでレイヤー1を突破されても、データベースレベルで他テナントのレコードを参照できないよう行フィルタリングを行う。
 
 ### ステップバイステップ
 
-#### ステップ 1: `tenant_id` 付きテーブルの作成
+#### ステップ1: tenant_id付きテーブルの作成
 
-テナント管理されるべき全テーブルに `tenant_id` の外部キーを含める
+テナント管理が必要な全テーブルに`tenant_id`の外部キーを含める。
 
 ```ruby
 # db/migrate/*_create_projects.rb
@@ -110,12 +109,12 @@ create_table :projects do |t|
 end
 ```
 
-同様に 他のテーブル(`users`, `tasks` テーブルなど)にも適用
+`users`, `tasks`テーブルなどにも同様に適用する。
 
-#### ステップ 2: RLS 制限付きデータベースへロールを追加
+#### ステップ2: RLS制限付きロールの作成
 
-`NOSUPERUSER` と `NOBYPASSRLS` を持つ専用ロール `rails_user` を作成。
-これらのポリシーが割り当てられたユーザーは、RLS ポリシーの影響下となる
+`NOSUPERUSER`と`NOBYPASSRLS`を持つ専用ロール`rails_user`を作成する。
+このロールに割り当てられたユーザーはRLSポリシーの影響下に置かれる。
 
 ```ruby
 # db/migrate/*_create_rls_role.rb
@@ -124,16 +123,16 @@ execute <<~SQL
 SQL
 ```
 
-このロールに全テーブルとシーケンスへの標準 CRUD 権限を付与する
+全テーブルとシーケンスへの標準CRUD権限を付与する。
 
 ```ruby
 execute "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO rails_user;"
 execute "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rails_user;"
 ```
 
-#### ステップ 3: RLS の有効化とポリシーの作成
+#### ステップ3: RLSの有効化とポリシー作成
 
-テナント管理されるべき全テーブルに対して RLS を有効化し、各テーブルにポリシーを追加
+テナント管理対象の全テーブルでRLSを有効化し、各テーブルにポリシーを追加する。
 
 ```ruby
 # db/migrate/*_enable_rls_policies.rb
@@ -147,7 +146,7 @@ execute "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rails_user;"
 end
 ```
 
-`tenants` テーブルは Rails仕様で`tenant_id` ではなく `id` カラムに対してポリシーの作成
+`tenants`テーブルはRails仕様で`tenant_id`ではなく`id`カラムに対してポリシーを作成する。
 
 ```sql
 CREATE POLICY tenants_isolation ON tenants
@@ -155,13 +154,13 @@ CREATE POLICY tenants_isolation ON tenants
   USING (id = current_setting('app.current_tenant_id')::bigint);
 ```
 
-RLS 対象外のテーブルとして以下存在する（Rails マイグレーション関連）
-`schema_migrations` 
-`ar_internal_metadata`
+RLS対象外のテーブル（Railsマイグレーション関連）
+- `schema_migrations`
+- `ar_internal_metadata`
 
-#### ステップ 4: リクエストごとのロール切り替え
+#### ステップ4: リクエストごとのロール切り替え
 
-アプリケーションはデフォルトで `postgres`（スーパーユーザー）として PostgreSQL に接続するが、共通Controllerクラスにてリクエスト受付時に `around_action` が制限付きロールに切り替えを行う
+アプリケーションはデフォルトで`postgres`（スーパーユーザー）としてPostgreSQLに接続するが、`ApplicationController`の`around_action`でリクエスト処理中だけ制限付きロールに切り替える。
 
 ```ruby
 # app/controllers/application_controller.rb
@@ -181,35 +180,33 @@ ensure
 end
 ```
 
-`ensure` ブロックにて、リクエスト受付時にエラーが発生した場合、
-接続が必ずスーパーユーザーロールに復元される仕組みとする
+`ensure`ブロックにより、リクエスト処理中にエラーが発生した場合でも接続は必ずスーパーユーザーロールに復元される。
 
 ### データベースユーザー(postgres, rails_user)の使い分け
 
-| ユーザー | 用途 | RLS の動作 |
+| ユーザー | 用途 | RLSの動作 |
 |---|---|---|
-| `postgres` (スーパーユーザー) | マイグレーション、スキーマ変更、DB 接続デフォルト | RLS影響外 |
-| `rails_user` | アプリケーションリクエスト処理 | RLS影響下 |
+| `postgres`(スーパーユーザー) | マイグレーション、スキーマ変更、DB接続デフォルト | RLS影響外 |
+| `rails_user` | アプリケーションのリクエスト処理 | RLS影響下 |
 
-単一コネクションプール（`postgres`）で動的に `SET ROLE` を行い、セットアップを可能とする
-また、以下の特徴を持たせる
-- `postgres`にて、フル権限でマイグレーションを実行できる
-- アプリケーションへのリクエスト受付時、RLS影響下の`rails_user`で実行する事で、RLSによる制限を持たせられる
+単一コネクションプール（`postgres`）で`SET ROLE`を動的に行うことで、以下を両立させている。
+- `postgres`でフル権限のマイグレーションを実行できる
+- リクエスト処理時は`rails_user`でRLSの制限を受ける
 
-### 各ステップでの詳細
+### リクエストごとのRLS有効化フロー
 
-ロール切り替えからクエリ実行、接続クリーンアップまでの単一リクエストのステップは以下図を参照のこと
+ロール切り替えからクエリ実行、接続クリーンアップまでの流れは以下の図を参照のこと。
 
-![リクエストごとの RLS 有効化フロー](images/rls_per_request.svg)
+![リクエストごとのRLS有効化フロー](images/rls_per_request.svg)
 
-### 多層防御: 各レイヤーの詳細
+### 多層防御: 各レイヤーの比較
 
-| シナリオ | acts_as_tenant のみ | RLS あり |
+| シナリオ | acts_as_tenantのみ | RLSあり |
 |---|---|---|
-| 通常の ActiveRecord クエリ | ✅ 安全 | ✅ 安全 |
-| テナントスコープなしの生 SQL | ❌ データ漏洩 | ✅ データ漏洩をブロック |
-| クエリビルダー / スコープのバグ | ❌ データ漏洩 | ✅ データ漏洩をブロック |
-| 直接 DB コンソールアクセス (`rails_user` として) | ❌ 保護なし | ✅ データ漏洩をブロック |
+| 通常のActiveRecordクエリ | 安全 | 安全 |
+| テナントスコープなしの生SQL | データ漏洩 | ブロック |
+| クエリビルダー / スコープのバグ | データ漏洩 | ブロック |
+| 直接DBコンソールアクセス(`rails_user`として) | 保護なし | ブロック |
 
 ---
 
@@ -217,10 +214,10 @@ end
 
 | 概念 | 本プロジェクトでの実装 |
 |---|---|
-| RLS 制限ロール | `rails_user` (`NOBYPASSRLS`) |
+| RLS制限ロール | `rails_user`(`NOBYPASSRLS`) |
 | テナント用セッション変数 | `app.current_tenant_id` |
 | ポリシー条件 | `tenant_id = current_setting('app.current_tenant_id')::bigint` |
-| ロール切り替え | `around_action` 内の `SET ROLE` / `RESET ROLE` |
-| マイグレーションの安全性 | `postgres`（スーパーユーザー）として実行、RLS をバイパス |
-| RLS 対象テーブル | `tenants`, `users`, `projects`, `tasks` |
-| RLS 対象外テーブル | `schema_migrations`, `ar_internal_metadata` |
+| ロール切り替え | `around_action`内の`SET ROLE` / `RESET ROLE` |
+| マイグレーションの安全性 | `postgres`（スーパーユーザー）で実行し、RLSをバイパス |
+| RLS対象テーブル | `tenants`, `users`, `projects`, `tasks` |
+| RLS対象外テーブル | `schema_migrations`, `ar_internal_metadata` |
