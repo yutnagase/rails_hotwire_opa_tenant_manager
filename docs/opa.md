@@ -14,9 +14,7 @@ The key idea: **decouple policy from application code**.
 
 Instead of scattering `if user.admin?` checks throughout your controllers, you define all authorization rules in one place (Rego files) and ask OPA "Is this action allowed?" via a simple HTTP API.
 
-```
-Application  →  "Can member update task?"  →  OPA (Rego)  →  true / false
-```
+![OPA Authorization Flow](images/opa_authz_flow.svg)
 
 ---
 

@@ -27,22 +27,7 @@ The CI definition file is [`.github/workflows/ci.yml`](../.github/workflows/ci.y
 
 Five jobs run **in parallel**:
 
-```
-┌─────────────────────────────────────────────────┐
-│              GitHub Actions CI                   │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │ scan_ruby│  │ scan_js  │  │   lint   │       │
-│  │(Brakeman)│  │(importmap│  │(RuboCop) │       │
-│  │          │  │  audit)  │  │          │       │
-│  └──────────┘  └──────────┘  └──────────┘       │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐                      │
-│  │   test   │  │ test_opa │                      │
-│  │ (RSpec)  │  │(opa test)│                      │
-│  └──────────┘  └──────────┘                      │
-└─────────────────────────────────────────────────┘
-```
+![CI Workflow Structure](images/ci_workflow.svg)
 
 ---
 

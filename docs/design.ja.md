@@ -66,13 +66,7 @@ B2B向けのプロジェクト・タスク管理ツールである。
 
 ### 4.1 ER図
 
-```
-tenants 1──* users
-tenants 1──* projects
-tenants 1──* tasks
-projects 1──* tasks
-users 1──* tasks (任意)
-```
+![ER図](images/er_diagram.ja.svg)
 
 ### 4.2 テーブル定義
 

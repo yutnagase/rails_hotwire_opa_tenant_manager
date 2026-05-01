@@ -66,13 +66,7 @@ Three services are started via `docker-compose.yml`:
 
 ### 4.1 ER Diagram
 
-```
-tenants 1──* users
-tenants 1──* projects
-tenants 1──* tasks
-projects 1──* tasks
-users 1──* tasks (optional)
-```
+![ER Diagram](images/er_diagram.svg)
 
 ### 4.2 Table Definitions
 
