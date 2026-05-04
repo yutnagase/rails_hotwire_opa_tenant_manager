@@ -217,7 +217,9 @@ $ psql -U postgres -h db -d tenant_manager_development -c "SELECT * FROM schema_
 ERROR:  relation "schema_migrations" does not exist
 ```
 
-`schema.rb` をロードしているのは `db:migrate` の方である。Rails 8.1 では、`db:migrate` 実行時に `schema.rb`（または `structure.sql`）が存在すると、マイグレーションファイルを実行する代わりにスキーマファイルをロードする。この時、テーブルが作成されると同時に `schema_migrations` テーブルにも全マイグレーションのバージョンが記録される。
+`schema.rb`（または `structure.sql`）をロードしているのは `db:migrate` の処理フローの中である。Rails 8.1 では、`db:migrate` 自体が明示的に `schema.rb` をロードするわけではない。しかし、空のデータベースに対してはRailsが「未初期化状態」と判断し、マイグレーションを順に実行する代わりに、スキーマファイル（`schema.rb` / `structure.sql`）をロードしてデータベースを最新状態に揃える最適化が行われる。この時、テーブルが作成されると同時に `schema_migrations` テーブルにも全マイグレーションのバージョンが記録される。
+
+この挙動はRailsの内部最適化によるものであり、`db:migrate` が常にマイグレーションファイルを実行するとは限らない点に注意が必要である。
 
 その結果、マイグレーションファイルは1つも実行されない。`execute` で書いた `CREATE ROLE` も `ENABLE ROW LEVEL SECURITY` も、一度も実行されないまま `up` と表示される。
 
@@ -363,14 +365,14 @@ $ psql -U postgres -h db -c "\du"
 | execute（RLS / トリガー等）   | 含まれない | 含まれる      | 実行される           |
 | CREATE ROLE（クラスタレベル） | 含まれない | 含まれない    | 実行される           |
 
-「マイグレーション実行」の列は全て「実行される」だが、`schema.rb` が存在する環境では `db:migrate` 時にスキーマファイルがロードされ、マイグレーション自体がスキップされるため、2行目と3行目は実質的に実行されない。これが今回の落とし穴だった。
+「マイグレーション実行」の列は全て「実行される」だが、スキーマファイル（`schema.rb` / `structure.sql`）が存在する環境では、`db:migrate` が空のDBに対してスキーマファイルをロードする最適化が働き、マイグレーション自体がスキップされるため、2行目と3行目は実質的に実行されない。これが今回の落とし穴だった。
 
 `execute` を使うプロジェクトでは `schema_format = :sql` にすること。`CREATE ROLE` のようなクラスタレベルの操作はDBコンテナの初期化スクリプトに分離すること。この2点を押さえておけば、同じ問題は回避できたはずだ。
 
 ## まとめ
 
 - Railsのデフォルト設定（`schema_format = :ruby`）では、`schema.rb` にActiveRecord DSLで表現できない `execute` の内容は保持されない
-- `db:migrate` 実行時に `schema.rb` が存在すると、マイグレーションファイルを実行する代わりにスキーマファイルがロードされ、`schema_migrations` に全バージョンが記録されるため、マイグレーションが全てスキップされる
+- 空のDBに対して `db:migrate` を実行すると、Railsの内部最適化によりスキーマファイルがロードされ、`schema_migrations` に全バージョンが記録されるため、マイグレーションが全てスキップされる
 - 結果として、`execute` で書いた `CREATE ROLE`、`ENABLE ROW LEVEL SECURITY`、`CREATE POLICY` などは一度も実行されない
 - 通常のCRUD系アプリでは `schema.rb` で十分だが、RLSやトリガーなどを使うプロジェクトでは `config.active_record.schema_format = :sql` が必須
 - PostgreSQLのロール（`CREATE ROLE`）はクラスタレベルのオブジェクトであり、`structure.sql` にも含まれないため、DBコンテナの初期化スクリプト（`docker-entrypoint-initdb.d`）で作成する必要がある
