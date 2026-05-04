@@ -4,17 +4,66 @@ default allow = false
 
 import rego.v1
 
-# admin: 全操作可能
-allow if input.user.role == "admin"
-
-# member: 読み取り・作成・更新が可能
+# --- tenant ---
+# 全ロール: read可
 allow if {
-    input.user.role == "member"
-    input.action in ["read", "create", "update"]
+    input.resource == "tenant"
+    input.action == "read"
+}
+# admin: update可
+allow if {
+    input.resource == "tenant"
+    input.action == "update"
+    input.user.role == "admin"
 }
 
-# guest: 読み取りのみ
+# --- project ---
+# 全ロール: read可
 allow if {
-    input.user.role == "guest"
+    input.resource == "project"
     input.action == "read"
+}
+# admin/member: create/update可
+allow if {
+    input.resource == "project"
+    input.action in ["create", "update"]
+    input.user.role in ["admin", "member"]
+}
+# admin: delete可
+allow if {
+    input.resource == "project"
+    input.action == "delete"
+    input.user.role == "admin"
+}
+
+# --- task ---
+# 全ロール: read可
+allow if {
+    input.resource == "task"
+    input.action == "read"
+}
+# admin/member: create/update可
+allow if {
+    input.resource == "task"
+    input.action in ["create", "update"]
+    input.user.role in ["admin", "member"]
+}
+# admin: delete可
+allow if {
+    input.resource == "task"
+    input.action == "delete"
+    input.user.role == "admin"
+}
+
+# --- user ---
+# 全ロール: read可
+allow if {
+    input.resource == "user"
+    input.action == "read"
+}
+# admin: update可
+allow if {
+    input.resource == "user"
+    input.action == "update"
+    input.user.role == "admin"
 }

@@ -68,11 +68,13 @@ PostgreSQL Row Level Security (RLS) enforces tenant data isolation at the databa
 
 ## Screens / Routes
 
-| Screen       | Path                      | Description                          |
+| Screen           | Path                      | Description                                      |
 |  | - |  |
-| Project list | `/projects`               | Lists all projects within the tenant |
-| Task list    | `/projects/:id/tasks`     | Task list with inline status update  |
-| Task detail  | `/projects/:id/tasks/:id` | Task detail and status update        |
+| Project list     | `/projects`               | Lists all projects within the tenant (CRUD for admin/member) |
+| Task list        | `/projects/:id/tasks`     | Task list with inline status update (CRUD for admin/member)  |
+| Task detail      | `/projects/:id/tasks/:id` | Task detail, edit, and status update             |
+| User management  | `/admin/users`            | User list and role management                    |
+| Tenant settings  | `/settings`               | Tenant name display and edit (admin only)        |
 
 
 
@@ -208,7 +210,6 @@ Feature scope is kept intentionally small to make the architecture easier to und
 
 ## Future Improvements
 
-- Admin UI for user role management within tenants
 - Token-based API authorization using OPA
 
 

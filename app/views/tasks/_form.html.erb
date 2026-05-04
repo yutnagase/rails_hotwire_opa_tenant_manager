@@ -1,0 +1,29 @@
+<%= form_with model: [project, task] do |f| %>
+  <% if task.errors.any? %>
+    <div style="color: red; margin-bottom: 10px;">
+      <% task.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div style="margin-bottom: 10px;">
+    <%= f.label :name, style: "display: block; font-weight: bold;" %>
+    <%= f.text_field :name, style: "width: 100%; padding: 6px;" %>
+  </div>
+
+  <div style="margin-bottom: 10px;">
+    <%= f.label :status, style: "display: block; font-weight: bold;" %>
+    <%= f.select :status, Task::STATUSES.map { |s| [s.capitalize, s] }, {}, style: "padding: 6px;" %>
+  </div>
+
+  <div style="margin-bottom: 10px;">
+    <%= f.label :user_id, "Assignee", style: "display: block; font-weight: bold;" %>
+    <%= f.select :user_id,
+          User.order(:name).map { |u| [u.name, u.id] },
+          { include_blank: "Unassigned" },
+          style: "padding: 6px;" %>
+  </div>
+
+  <%= f.submit style: "padding: 8px 16px;" %>
+<% end %>

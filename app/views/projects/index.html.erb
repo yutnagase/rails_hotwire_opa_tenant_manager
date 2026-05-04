@@ -1,11 +1,18 @@
 <h2>Projects</h2>
 
+<% if can?("create", "project") %>
+  <p><%= link_to "+ New Project", new_project_path %></p>
+<% end %>
+
 <% if @projects.any? %>
   <table style="width: 100%; border-collapse: collapse;">
     <thead>
       <tr style="border-bottom: 2px solid #333;">
         <th style="text-align: left; padding: 8px;">Name</th>
         <th style="text-align: right; padding: 8px;">Tasks</th>
+        <% if can?("update", "project") || can?("delete", "project") %>
+          <th style="text-align: right; padding: 8px;">Actions</th>
+        <% end %>
       </tr>
     </thead>
     <tbody>
@@ -17,6 +24,18 @@
           <td style="text-align: right; padding: 8px;">
             <%= project.tasks.count %>
           </td>
+          <% if can?("update", "project") || can?("delete", "project") %>
+            <td style="text-align: right; padding: 8px;">
+              <% if can?("update", "project") %>
+                <%= link_to "Edit", edit_project_path(project) %>
+              <% end %>
+              <% if can?("delete", "project") %>
+                <%= button_to "Delete", project_path(project), method: :delete,
+                      data: { turbo_confirm: "Are you sure?" },
+                      style: "background: none; border: none; color: red; cursor: pointer; padding: 0;" %>
+              <% end %>
+            </td>
+          <% end %>
         </tr>
       <% end %>
     </tbody>

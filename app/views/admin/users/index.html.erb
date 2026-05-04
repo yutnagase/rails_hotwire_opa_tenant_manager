@@ -1,0 +1,32 @@
+<h2>Users</h2>
+
+<table style="width: 100%; border-collapse: collapse;">
+  <thead>
+    <tr style="border-bottom: 2px solid #333;">
+      <th style="text-align: left; padding: 8px;">Name</th>
+      <th style="text-align: left; padding: 8px;">Email</th>
+      <th style="text-align: left; padding: 8px;">Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 8px;"><%= user.name %></td>
+        <td style="padding: 8px;"><%= user.email %></td>
+        <td style="padding: 8px;">
+          <% if can?("update", "user") && !user.seed_admin? %>
+            <%= form_with model: [:admin, user], method: :patch do |f| %>
+              <%= f.select :role,
+                    User::ROLES.map { |r| [r.capitalize, r] },
+                    {},
+                    onchange: "this.form.requestSubmit()",
+                    style: "padding: 4px;" %>
+            <% end %>
+          <% else %>
+            <%= user.role %><%= " (protected)" if user.seed_admin? %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -11,13 +11,28 @@
   <dt><strong>Status</strong></dt>
   <dd>
     <%= turbo_frame_tag "task_status" do %>
-      <%= form_with model: [@project, @task], method: :patch do |f| %>
-        <%= f.select :status,
-              Task::STATUSES.map { |s| [s.capitalize, s] },
-              {},
-              onchange: "this.form.requestSubmit()",
-              style: "padding: 4px;" %>
+      <% if can?("update", "task") %>
+        <%= form_with model: [@project, @task], method: :patch do |f| %>
+          <%= f.select :status,
+                Task::STATUSES.map { |s| [s.capitalize, s] },
+                {},
+                onchange: "this.form.requestSubmit()",
+                style: "padding: 4px;" %>
+        <% end %>
+      <% else %>
+        <%= @task.status.capitalize %>
       <% end %>
     <% end %>
   </dd>
 </dl>
+
+<% if can?("update", "task") %>
+  <p><%= link_to "Edit", edit_project_task_path(@project, @task) %></p>
+<% end %>
+<% if can?("delete", "task") %>
+  <p>
+    <%= button_to "Delete", project_task_path(@project, @task), method: :delete,
+          data: { turbo_confirm: "Are you sure?" },
+          style: "background: none; border: none; color: red; cursor: pointer; padding: 0;" %>
+  </p>
+<% end %>

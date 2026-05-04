@@ -1,0 +1,16 @@
+<%= form_with model: project do |f| %>
+  <% if project.errors.any? %>
+    <div style="color: red; margin-bottom: 10px;">
+      <% project.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div style="margin-bottom: 10px;">
+    <%= f.label :name, style: "display: block; font-weight: bold;" %>
+    <%= f.text_field :name, style: "width: 100%; padding: 6px;" %>
+  </div>
+
+  <%= f.submit style: "padding: 8px 16px;" %>
+<% end %>

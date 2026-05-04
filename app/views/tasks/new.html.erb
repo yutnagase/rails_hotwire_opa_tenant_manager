@@ -1,0 +1,4 @@
+<h2>New Task</h2>
+<p><%= link_to "← Back to Tasks", project_tasks_path(@project) %></p>
+
+<%= render "form", task: @task, project: @project %>

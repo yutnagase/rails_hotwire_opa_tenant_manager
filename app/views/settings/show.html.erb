@@ -1,0 +1,33 @@
+<h2>Tenant Settings</h2>
+
+<% if can?("update", "tenant") %>
+  <%= form_with model: @tenant, url: settings_path do |f| %>
+    <% if @tenant.errors.any? %>
+      <div style="color: red; margin-bottom: 10px;">
+        <% @tenant.errors.full_messages.each do |msg| %>
+          <p><%= msg %></p>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div style="margin-bottom: 10px;">
+      <%= f.label :name, "Tenant Name", style: "display: block; font-weight: bold;" %>
+      <%= f.text_field :name, style: "width: 100%; padding: 6px;" %>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+      <strong>Subdomain</strong>
+      <p><%= @tenant.subdomain %></p>
+    </div>
+
+    <%= f.submit "Update", style: "padding: 8px 16px;" %>
+  <% end %>
+<% else %>
+  <dl style="line-height: 2;">
+    <dt><strong>Tenant Name</strong></dt>
+    <dd><%= @tenant.name %></dd>
+
+    <dt><strong>Subdomain</strong></dt>
+    <dd><%= @tenant.subdomain %></dd>
+  </dl>
+<% end %>
