@@ -14,13 +14,13 @@
         <%= link_to "Tenant Manager", root_path, style: "text-decoration: none; color: inherit;" %>
       </h1>
       <% if user_signed_in? %>
-        <span style="font-size: 0.85rem;">
+        <nav style="font-size: 0.85rem;">
           <%= current_user.name %> (<%= current_user.role %>)
-          <% if current_user.role == "admin" %>
-            | <%= link_to "Users", admin_users_path %>
-          <% end %>
+          | <%= link_to "Projects", projects_path %>
+          | <%= link_to "Users", admin_users_path %>
+          | <%= link_to "Settings", settings_path %>
           | <%= button_to "Sign out", destroy_user_session_path, method: :delete, data: { turbo: false } %>
-        </span>
+        </nav>
       <% end %>
     </header>
     <% if notice %><p style="color: green;"><%= notice %></p><% end %>

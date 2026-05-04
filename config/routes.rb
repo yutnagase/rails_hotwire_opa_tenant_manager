@@ -12,14 +12,16 @@ Rails.application.routes.draw do
     delete "sign_out", to: "users/sessions#destroy", as: :destroy_user_session
   end
 
+  resource :settings, only: [ :show, :update ]
+
   namespace :admin do
     resources :users, only: [ :index, :update ]
   end
 
   resource :dev_session, only: [ :new, :create ]
 
-  resources :projects, only: [ :index ] do
-    resources :tasks, only: [ :index, :show, :update ]
+  resources :projects do
+    resources :tasks
   end
 
   root "projects#index"

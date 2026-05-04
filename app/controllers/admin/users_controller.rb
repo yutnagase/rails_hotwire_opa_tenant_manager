@@ -28,20 +28,12 @@ class Admin::UsersController < ApplicationController
     params.require(:user).permit(:role)
   end
 
-  def opa_action_for(action)
-    case action
-    when "index" then "read"
-    when "update" then "update"
-    else super
-    end
-  end
-
   def authorize_with_opa
     return unless user_signed_in?
 
     opa_action = opa_action_for(action_name)
 
-    unless OpaClient.allowed?(user: current_user, action: opa_action, resource: "admin_user")
+    unless OpaClient.allowed?(user: current_user, action: opa_action, resource: "user")
       head :forbidden
     end
   end

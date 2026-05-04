@@ -7,12 +7,16 @@
       <%= task.user&.name || "Unassigned" %>
     </td>
     <td style="padding: 8px;">
-      <%= form_with model: [project, task], method: :patch do |f| %>
-        <%= f.select :status,
-              Task::STATUSES.map { |s| [s.capitalize, s] },
-              {},
-              onchange: "this.form.requestSubmit()",
-              style: "padding: 4px;" %>
+      <% if can?("update", "task") %>
+        <%= form_with model: [project, task], method: :patch do |f| %>
+          <%= f.select :status,
+                Task::STATUSES.map { |s| [s.capitalize, s] },
+                {},
+                onchange: "this.form.requestSubmit()",
+                style: "padding: 4px;" %>
+        <% end %>
+      <% else %>
+        <%= task.status.capitalize %>
       <% end %>
     </td>
   </tr>

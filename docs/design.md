@@ -7,13 +7,17 @@
 A B2B project and task management tool.  
 An MVP focused on security (multi-tenant isolation, RLS, OPA authorization) and a modern UX powered by Hotwire.
 
-### Screen Structure (3 Screens)
+### Screen Structure (7 Screens)
 
-| #   | Screen       | Path                              | Description                              |
-| --- | ------------ | --------------------------------- | ---------------------------------------- |
-| 1   | Project list | `/projects` (root)                | Lists all projects within the tenant     |
-| 2   | Task list    | `/projects/:project_id/tasks`     | Lists tasks under a project              |
-| 3   | Task detail  | `/projects/:project_id/tasks/:id` | Task detail view and status update       |
+| #   | Screen          | Path                              | Description                                      |
+| --- | --------------- | --------------------------------- | ------------------------------------------------ |
+| 1   | Project list    | `/projects` (root)                | Lists all projects within the tenant (CRUD for admin/member) |
+| 2   | Project form    | `/projects/new`, `/projects/:id/edit` | Create / edit project (admin/member)         |
+| 3   | Task list       | `/projects/:project_id/tasks`     | Lists tasks under a project (CRUD for admin/member) |
+| 4   | Task detail     | `/projects/:project_id/tasks/:id` | Task detail view, edit, and status update        |
+| 5   | Task form       | `/projects/:project_id/tasks/new`, `/projects/:project_id/tasks/:id/edit` | Create / edit task (admin/member) |
+| 6   | User management | `/admin/users`                    | User list and role management                    |
+| 7   | Tenant settings | `/settings`                       | Tenant name display and edit (admin only)        |
 
 
 ## 2. Technology Stack
@@ -171,12 +175,22 @@ OPA handles **vertical access control** — role-based permissions within a tena
 - OPA runs as a Docker container, evaluating Rego policies at `http://opa:8181/v1/data/authz/allow`
 - `ApplicationController` calls OPA on every request via `before_action :authorize_with_opa`
 - Fail-safe design: access is denied if OPA is unreachable
+- A `can?(action, resource)` view helper enables permission-based UI rendering
 
-| Role \ Action | read | create | update | delete |
-| ------------- | ---- | ------ | ------ | ------ |
-| admin         | ✅   | ✅     | ✅     | ✅     |
-| member        | ✅   | ✅     | ✅     | ❌     |
-| guest         | ✅   | ❌     | ❌     | ❌     |
+Permission matrix (per resource):
+
+| Resource \ Role | admin | member | guest |
+| --------------- | ----- | ------ | ----- |
+| tenant (read)   | ✅    | ✅     | ✅    |
+| tenant (update) | ✅    | ❌     | ❌    |
+| project (read)  | ✅    | ✅     | ✅    |
+| project (create/update) | ✅ | ✅  | ❌    |
+| project (delete)| ✅    | ❌     | ❌    |
+| task (read)     | ✅    | ✅     | ✅    |
+| task (create/update) | ✅ | ✅    | ❌    |
+| task (delete)   | ✅    | ❌     | ❌    |
+| user (read)     | ✅    | ✅     | ✅    |
+| user (update)   | ✅    | ❌     | ❌    |
 
 > For a detailed explanation of OPA concepts, Rego policies, and integration, see [opa.md](opa.md).
 
@@ -223,19 +237,36 @@ The Stimulus controller foundation is configured (`app/javascript/controllers/`)
 ```ruby
 root "projects#index"
 
-resources :projects, only: [:index] do
-  resources :tasks, only: [:index, :show, :update]
+resource :settings, only: [:show, :update]
+
+namespace :admin do
+  resources :users, only: [:index, :update]
+end
+
+resources :projects do
+  resources :tasks
 end
 ```
 
-| Method | Path                            | Action         | Description          |
-| ------ | ------------------------------- | -------------- | -------------------- |
-| GET    | /projects                       | projects#index | Project list         |
-| GET    | /projects/:project_id/tasks     | tasks#index    | Task list            |
-| GET    | /projects/:project_id/tasks/:id | tasks#show     | Task detail          |
-| PATCH  | /projects/:project_id/tasks/:id | tasks#update   | Task status update   |
-
-Only minimal CRUD is exposed for the MVP. create / destroy are currently out of scope.
+| Method | Path                                | Action           | Description              |
+| ------ | ----------------------------------- | ---------------- | ------------------------ |
+| GET    | /projects                           | projects#index   | Project list             |
+| GET    | /projects/new                       | projects#new     | New project form         |
+| POST   | /projects                           | projects#create  | Create project           |
+| GET    | /projects/:id/edit                  | projects#edit    | Edit project form        |
+| PATCH  | /projects/:id                       | projects#update  | Update project           |
+| DELETE | /projects/:id                       | projects#destroy | Delete project           |
+| GET    | /projects/:project_id/tasks         | tasks#index      | Task list                |
+| GET    | /projects/:project_id/tasks/new     | tasks#new        | New task form            |
+| POST   | /projects/:project_id/tasks         | tasks#create     | Create task              |
+| GET    | /projects/:project_id/tasks/:id     | tasks#show       | Task detail              |
+| GET    | /projects/:project_id/tasks/:id/edit| tasks#edit       | Edit task form           |
+| PATCH  | /projects/:project_id/tasks/:id     | tasks#update     | Update task              |
+| DELETE | /projects/:project_id/tasks/:id     | tasks#destroy    | Delete task              |
+| GET    | /admin/users                        | admin/users#index| User list                |
+| PATCH  | /admin/users/:id                    | admin/users#update| Update user role        |
+| GET    | /settings                           | settings#show    | Tenant settings          |
+| PATCH  | /settings                           | settings#update  | Update tenant settings   |
 
 
 ## 11. Directory Structure
@@ -251,14 +282,19 @@ rails_hotwire_opa_tenant_manager/
 │       └── ci.yml          # Brakeman / importmap audit / RuboCop
 ├── app/
 │   ├── controllers/
+│   │   ├── admin/
+│   │   │   └── users_controller.rb            # User management (admin)
 │   │   ├── concerns/
 │   │   ├── users/
 │   │   │   ├── omniauth_callbacks_controller.rb  # Auth0 callback
 │   │   │   └── sessions_controller.rb            # Sign out
 │   │   ├── application_controller.rb  # Tenant control, auth, OPA authz
 │   │   ├── dev_sessions_controller.rb # Login page (Auth0 / dev user selection)
-│   │   ├── projects_controller.rb
-│   │   └── tasks_controller.rb
+│   │   ├── projects_controller.rb     # Full CRUD
+│   │   ├── settings_controller.rb     # Tenant settings
+│   │   └── tasks_controller.rb        # Full CRUD
+│   ├── helpers/
+│   │   └── application_helper.rb  # can?(action, resource) helper
 │   ├── models/
 │   │   ├── tenant.rb       # has_many :users, :projects, :tasks
 │   │   ├── user.rb         # acts_as_tenant, devise :omniauthable
@@ -267,14 +303,25 @@ rails_hotwire_opa_tenant_manager/
 │   ├── services/
 │   │   └── opa_client.rb   # OPA HTTP client
 │   └── views/
+│       ├── admin/
+│       │   └── users/
+│       │       └── index.html.erb          # User list with role management
 │       ├── layouts/
 │       │   └── application.html.erb
 │       ├── projects/
-│       │   └── index.html.erb
+│       │   ├── _form.html.erb              # Project form partial
+│       │   ├── edit.html.erb
+│       │   ├── index.html.erb
+│       │   └── new.html.erb
+│       ├── settings/
+│       │   └── show.html.erb               # Tenant settings
 │       └── tasks/
-│           ├── _task.html.erb          # Task row partial (Turbo Frame)
-│           ├── _task_status.html.erb   # Status partial (Turbo Frame)
+│           ├── _form.html.erb              # Task form partial
+│           ├── _task.html.erb              # Task row partial (Turbo Frame)
+│           ├── _task_status.html.erb       # Status partial (Turbo Frame)
+│           ├── edit.html.erb
 │           ├── index.html.erb
+│           ├── new.html.erb
 │           └── show.html.erb
 ├── config/
 │   ├── database.yml        # Connects as postgres (superuser)
@@ -392,5 +439,4 @@ The following jobs run automatically via GitHub Actions:
 | Puma port          | 8080                                            | 3000 (Puma default). Port mapping 8080:8080 is configured in docker-compose                                 |
 | DB connection      | Separate users for migration and runtime        | Single connection (postgres) + dynamic switching via `SET ROLE`. Simplifies connection pool management       |
 | Stimulus           | Mentioned as a usage target                     | Foundation only. Status changes use inline JS (`onchange="this.form.requestSubmit()"`)                      |
-| Task CRUD          | No specific restrictions                        | MVP exposes only index / show / update. create / destroy are not implemented                                |
 | Rails module name  | Not specified                                   | Generated as `Workspace` (`config/application.rb`)                                                          |

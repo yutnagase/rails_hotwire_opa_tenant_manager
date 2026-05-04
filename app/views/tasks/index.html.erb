@@ -1,6 +1,10 @@
 <h2><%= @project.name %> - Tasks</h2>
 <p><%= link_to "← Back to Projects", projects_path %></p>
 
+<% if can?("create", "task") %>
+  <p><%= link_to "+ New Task", new_project_task_path(@project) %></p>
+<% end %>
+
 <% if @tasks.any? %>
   <table style="width: 100%; border-collapse: collapse;">
     <thead>

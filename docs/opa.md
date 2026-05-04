@@ -99,7 +99,7 @@ The Rego policy file (`opa/policy/authz.rego`) is mounted into the container. OP
 
 ### The Rego Policy
 
-The complete authorization policy for this project:
+The authorization policy defines per-resource permissions. Each resource (tenant, project, task, user) has its own set of rules:
 
 ```rego
 # opa/policy/authz.rego
@@ -107,29 +107,41 @@ package authz
 
 default allow = false
 
-# admin: full access to all operations
-allow if input.user.role == "admin"
+import rego.v1
 
-# member: read, create, and update
-allow if {
-    input.user.role == "member"
-    input.action in ["read", "create", "update"]
-}
+# --- tenant ---
+allow if { input.resource == "tenant"; input.action == "read" }
+allow if { input.resource == "tenant"; input.action == "update"; input.user.role == "admin" }
 
-# guest: read only
-allow if {
-    input.user.role == "guest"
-    input.action == "read"
-}
+# --- project ---
+allow if { input.resource == "project"; input.action == "read" }
+allow if { input.resource == "project"; input.action in ["create", "update"]; input.user.role in ["admin", "member"] }
+allow if { input.resource == "project"; input.action == "delete"; input.user.role == "admin" }
+
+# --- task ---
+allow if { input.resource == "task"; input.action == "read" }
+allow if { input.resource == "task"; input.action in ["create", "update"]; input.user.role in ["admin", "member"] }
+allow if { input.resource == "task"; input.action == "delete"; input.user.role == "admin" }
+
+# --- user ---
+allow if { input.resource == "user"; input.action == "read" }
+allow if { input.resource == "user"; input.action == "update"; input.user.role == "admin" }
 ```
 
 This produces the following permission matrix:
 
-| Role \ Action | read | create | update | delete |
-|---|---|---|---|---|
-| admin | ✅ | ✅ | ✅ | ✅ |
-| member | ✅ | ✅ | ✅ | ❌ |
-| guest | ✅ | ❌ | ❌ | ❌ |
+| Resource \ Role | admin | member | guest |
+|---|---|---|---|
+| tenant (read) | ✅ | ✅ | ✅ |
+| tenant (update) | ✅ | ❌ | ❌ |
+| project (read) | ✅ | ✅ | ✅ |
+| project (create/update) | ✅ | ✅ | ❌ |
+| project (delete) | ✅ | ❌ | ❌ |
+| task (read) | ✅ | ✅ | ✅ |
+| task (create/update) | ✅ | ✅ | ❌ |
+| task (delete) | ✅ | ❌ | ❌ |
+| user (read) | ✅ | ✅ | ✅ |
+| user (update) | ✅ | ❌ | ❌ |
 
 ### The OPA Client
 
@@ -162,6 +174,19 @@ Key design decisions:
 - **Fail-safe** — If OPA is unreachable or returns an error, access is denied (`false`)
 - **Minimal input** — Only the user's role, action, and resource are sent; no sensitive data leaves the app
 - **Synchronous** — Uses `Net::HTTP.post` for simplicity; called once per request
+
+### View Helper
+
+A `can?(action, resource)` helper in `ApplicationHelper` enables permission-based UI rendering:
+
+```ruby
+# app/helpers/application_helper.rb
+def can?(action, resource)
+  OpaClient.allowed?(user: current_user, action: action, resource: resource)
+end
+```
+
+Views use this to conditionally show CRUD controls (e.g. "New", "Edit", "Delete" buttons) based on the current user's role.
 
 ### Controller Integration
 

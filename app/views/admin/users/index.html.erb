@@ -1,5 +1,4 @@
-<h2>User Management</h2>
-<p><%= link_to "← Back to Projects", projects_path %></p>
+<h2>Users</h2>
 
 <table style="width: 100%; border-collapse: collapse;">
   <thead>
@@ -15,9 +14,7 @@
         <td style="padding: 8px;"><%= user.name %></td>
         <td style="padding: 8px;"><%= user.email %></td>
         <td style="padding: 8px;">
-          <% if user.seed_admin? %>
-            <%= user.role %> (protected)
-          <% else %>
+          <% if can?("update", "user") && !user.seed_admin? %>
             <%= form_with model: [:admin, user], method: :patch do |f| %>
               <%= f.select :role,
                     User::ROLES.map { |r| [r.capitalize, r] },
@@ -25,6 +22,8 @@
                     onchange: "this.form.requestSubmit()",
                     style: "padding: 4px;" %>
             <% end %>
+          <% else %>
+            <%= user.role %><%= " (protected)" if user.seed_admin? %>
           <% end %>
         </td>
       </tr>
