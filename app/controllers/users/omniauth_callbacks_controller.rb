@@ -5,9 +5,8 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
   def auth0
     auth = request.env["omniauth.auth"]
-    tenant = Tenant.find_by!(subdomain: request.subdomain)
 
-    @user = User.from_omniauth(auth, tenant)
+    @user = User.from_omniauth(auth, ActsAsTenant.current_tenant)
     sign_in_and_redirect @user, event: :authentication
   end
 

@@ -159,6 +159,7 @@ In addition to application-layer isolation via acts_as_tenant, RLS provides defe
 - During requests, switches to `rails_user` (NOBYPASSRLS) via `SET ROLE`
 - RLS policies enforce `tenant_id = current_setting('app.current_tenant_id')` on all tenant-scoped tables
 - `schema_migrations` and `ar_internal_metadata` are excluded from RLS
+- `GRANT` privileges for `rails_user` are automatically applied after `db:migrate` and `db:schema:load` via a Rake task hook (`lib/tasks/rls.rake`)
 
 > For a detailed explanation of RLS concepts, policies, and implementation, see [rls.md](rls.md).
 
@@ -298,6 +299,9 @@ rails_hotwire_opa_tenant_manager/
 │   ├── auth0.md            # Auth0 authentication documentation
 │   ├── testing.md          # Testing strategy and structure
 │   └── images/             # Architecture and flow diagrams
+├── lib/
+│   └── tasks/
+│       └── rls.rake        # Auto-GRANT after db:migrate / db:schema:load
 ├── spec/
 │   ├── factories/          # FactoryBot definitions
 │   ├── models/             # Model specs

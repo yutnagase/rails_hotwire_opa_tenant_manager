@@ -118,6 +118,8 @@ execute "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO 
 execute "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rails_user;"
 ```
 
+> **Note:** These `GRANT` statements are also executed automatically after `db:migrate` and `db:schema:load` via a Rake task hook. See [Automatic GRANT via Rake Task](#automatic-grant-via-rake-task) for details.
+
 #### Step 3: Enable RLS and Create Policies
 
 RLS is enabled on all tenant-scoped tables, and a policy is created for each:
@@ -184,6 +186,37 @@ Using a single connection pool (as `postgres`) with dynamic `SET ROLE` keeps the
 The following sequence diagram shows the full lifecycle of a single request, from role switching through query execution to connection cleanup:
 
 ![Per-Request RLS Activation Flow](images/rls_per_request.svg)
+
+### Automatic GRANT via Rake Task
+
+PostgreSQL's `GRANT ... ON ALL TABLES` applies only to tables that exist at the time of execution, and `pg_dump` (used to generate `structure.sql`) does not include `GRANT` statements by default. This means that when the database is rebuilt via `db:setup` or `db:reset` (which use `db:schema:load`), RLS policies are restored from `structure.sql` but `GRANT` privileges are not.
+
+To solve this, a Rake task (`lib/tasks/rls.rake`) automatically re-applies `GRANT` privileges after `db:migrate` and `db:schema:load`:
+
+```ruby
+# lib/tasks/rls.rake
+namespace :rls do
+  task grant: :environment do
+    role = ENV.fetch("RLS_ROLE", "rails_user")
+    conn = ActiveRecord::Base.connection
+    conn.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO #{role};")
+    conn.execute("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO #{role};")
+    # + ALTER DEFAULT PRIVILEGES for future tables
+  end
+end
+
+%w[db:migrate db:schema:load].each do |task_name|
+  Rake::Task[task_name].enhance { Rake::Task["rls:grant"].invoke }
+end
+```
+
+This ensures `GRANT` privileges are applied regardless of how the database is initialized:
+
+| Initialization method | GRANT applied | How |
+|---|---|---|
+| `db:migrate` | ✅ | Migration + Rake hook |
+| `db:setup` / `db:reset` | ✅ | `db:schema:load` Rake hook |
+| `rls:grant` (manual) | ✅ | Direct execution |
 
 ### Defense in Depth: What Each Layer Catches
 
