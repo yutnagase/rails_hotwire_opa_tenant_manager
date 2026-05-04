@@ -130,6 +130,8 @@ execute "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO 
 execute "GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rails_user;"
 ```
 
+> **補足:** これらの`GRANT`文は`db:migrate`および`db:schema:load`の後にRakeタスクフックでも自動実行される。詳細は[Rakeタスクによる自動GRANT](#rakeタスクによる自動grant)を参照。
+
 #### ステップ3: RLSの有効化とポリシー作成
 
 テナント管理対象の全テーブルでRLSを有効化し、各テーブルにポリシーを追加する。
@@ -198,6 +200,37 @@ end
 ロール切り替えからクエリ実行、接続クリーンアップまでの流れは以下の図を参照のこと。
 
 ![リクエストごとのRLS有効化フロー](images/rls_per_request.ja.svg)
+
+### Rakeタスクによる自動GRANT
+
+PostgreSQLの`GRANT ... ON ALL TABLES`は実行時点で存在するテーブルにのみ適用される。また、`pg_dump`（`structure.sql`の生成に使用）はデフォルトで`GRANT`文を出力しない。そのため、`db:setup`や`db:reset`（内部で`db:schema:load`を使用）でDBを再構築すると、RLSポリシーは`structure.sql`から復元されるが、`GRANT`権限は復元されない。
+
+この問題を解決するため、Rakeタスク（`lib/tasks/rls.rake`）が`db:migrate`と`db:schema:load`の後に自動的に`GRANT`権限を再適用する。
+
+```ruby
+# lib/tasks/rls.rake
+namespace :rls do
+  task grant: :environment do
+    role = ENV.fetch("RLS_ROLE", "rails_user")
+    conn = ActiveRecord::Base.connection
+    conn.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO #{role};")
+    conn.execute("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO #{role};")
+    # + ALTER DEFAULT PRIVILEGES（将来作成されるテーブル用）
+  end
+end
+
+%w[db:migrate db:schema:load].each do |task_name|
+  Rake::Task[task_name].enhance { Rake::Task["rls:grant"].invoke }
+end
+```
+
+これにより、DB初期化の方法に関わらず`GRANT`権限が確実に適用される。
+
+| 初期化方法 | GRANT適用 | 適用経路 |
+|---|---|---|
+| `db:migrate` | ✅ | マイグレーション + Rakeフック |
+| `db:setup` / `db:reset` | ✅ | `db:schema:load` Rakeフック |
+| `rls:grant`（手動） | ✅ | 直接実行 |
 
 ### 多層防御: 各レイヤーの比較
 
