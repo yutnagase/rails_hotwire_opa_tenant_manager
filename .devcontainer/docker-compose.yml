@@ -6,8 +6,6 @@ services:
     volumes:
       - ..:/workspace:cached
     command: sleep infinity
-    ports:
-      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -32,6 +30,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ../db/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
