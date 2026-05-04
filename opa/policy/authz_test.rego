@@ -47,4 +47,4 @@ test_user_guest_read if { allow with input as {"user": {"role": "guest"}, "actio
 test_user_guest_deny_update if { not allow with input as {"user": {"role": "guest"}, "action": "update", "resource": "user"} }
 
 # === unknown role ===
-test_unknown_role_deny if { not allow with input as {"user": {"role": "unknown"}, "action": "read", "resource": "project"} }
+test_unknown_role_deny if { not allow with input as {"user": {"role": "unknown"}, "action": "delete", "resource": "project"} }

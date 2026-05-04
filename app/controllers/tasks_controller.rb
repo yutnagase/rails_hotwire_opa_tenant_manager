@@ -1,4 +1,6 @@
 class TasksController < ApplicationController
+  include ActionView::RecordIdentifier
+
   before_action :set_project
   before_action :set_task, only: [ :show, :edit, :update, :destroy ]
 

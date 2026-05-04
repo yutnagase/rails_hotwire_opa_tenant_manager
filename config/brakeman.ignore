@@ -1,0 +1,10 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "01a88a0a17848e70999c17f6438a636b00e01da39a2c0aa0c46f20f0685c7202",
+      "note": "Admin-only endpoint protected by OPA authorization. Only admin role can access this action."
+    }
+  ],
+  "updated": "2026-05-04",
+  "brakeman_version": "8.0.4"
+}
