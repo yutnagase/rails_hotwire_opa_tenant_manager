@@ -1,0 +1,33 @@
+<h2>User Management</h2>
+<p><%= link_to "← Back to Projects", projects_path %></p>
+
+<table style="width: 100%; border-collapse: collapse;">
+  <thead>
+    <tr style="border-bottom: 2px solid #333;">
+      <th style="text-align: left; padding: 8px;">Name</th>
+      <th style="text-align: left; padding: 8px;">Email</th>
+      <th style="text-align: left; padding: 8px;">Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 8px;"><%= user.name %></td>
+        <td style="padding: 8px;"><%= user.email %></td>
+        <td style="padding: 8px;">
+          <% if user.seed_admin? %>
+            <%= user.role %> (protected)
+          <% else %>
+            <%= form_with model: [:admin, user], method: :patch do |f| %>
+              <%= f.select :role,
+                    User::ROLES.map { |r| [r.capitalize, r] },
+                    {},
+                    onchange: "this.form.requestSubmit()",
+                    style: "padding: 4px;" %>
+            <% end %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

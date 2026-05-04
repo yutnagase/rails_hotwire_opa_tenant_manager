@@ -16,7 +16,10 @@
       <% if user_signed_in? %>
         <span style="font-size: 0.85rem;">
           <%= current_user.name %> (<%= current_user.role %>)
-          | <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete } %>
+          <% if current_user.role == "admin" %>
+            | <%= link_to "Users", admin_users_path %>
+          <% end %>
+          | <%= button_to "Sign out", destroy_user_session_path, method: :delete, data: { turbo: false } %>
         </span>
       <% end %>
     </header>
