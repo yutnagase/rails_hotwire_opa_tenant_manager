@@ -1,38 +1,44 @@
-<h2><%= @task.name %></h2>
-<p><%= link_to "← Back to Tasks", project_tasks_path(@project) %></p>
-
-<dl style="line-height: 2;">
-  <dt><strong>Project</strong></dt>
-  <dd><%= @project.name %></dd>
-
-  <dt><strong>Assignee</strong></dt>
-  <dd><%= @task.user&.name || "Unassigned" %></dd>
-
-  <dt><strong>Status</strong></dt>
-  <dd>
-    <%= turbo_frame_tag "task_status" do %>
+<div class="bg-white border border-gray-200 rounded-lg overflow-hidden max-w-2xl">
+  <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+    <h2 class="text-lg font-bold text-gray-800">
+      <%= link_to @project.name, project_tasks_path(@project), class: "text-gray-500 hover:text-indigo-600 transition" %>
+      <span class="text-gray-300 mx-1">&gt;</span>
+      <%= @task.name %>
+    </h2>
+    <div class="flex items-center gap-2">
       <% if can?("update", "task") %>
-        <%= form_with model: [@project, @task], method: :patch do |f| %>
-          <%= f.select :status,
-                Task::STATUSES.map { |s| [s.capitalize, s] },
-                {},
-                onchange: "this.form.requestSubmit()",
-                style: "padding: 4px;" %>
-        <% end %>
-      <% else %>
-        <%= @task.status.capitalize %>
+        <%= link_to "Edit", edit_project_task_path(@project, @task), class: "px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition" %>
       <% end %>
-    <% end %>
-  </dd>
-</dl>
+      <% if can?("delete", "task") %>
+        <%= button_to project_task_path(@project, @task), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition cursor-pointer border-none" do %>
+          Delete
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 
-<% if can?("update", "task") %>
-  <p><%= link_to "Edit", edit_project_task_path(@project, @task) %></p>
-<% end %>
-<% if can?("delete", "task") %>
-  <p>
-    <%= button_to "Delete", project_task_path(@project, @task), method: :delete,
-          data: { turbo_confirm: "Are you sure?" },
-          style: "background: none; border: none; color: red; cursor: pointer; padding: 0;" %>
-  </p>
-<% end %>
+  <dl class="divide-y divide-gray-100">
+    <div class="grid grid-cols-3 px-6 py-4">
+      <dt class="text-sm font-medium text-gray-500">Assignee</dt>
+      <dd class="col-span-2 text-sm text-gray-900"><%= @task.user&.name || "Unassigned" %></dd>
+    </div>
+    <div class="grid grid-cols-3 px-6 py-4 items-center">
+      <dt class="text-sm font-medium text-gray-500">Status</dt>
+      <dd class="col-span-2 text-sm">
+        <%= turbo_frame_tag "task_status" do %>
+          <% if can?("update", "task") %>
+            <%= form_with model: [@project, @task], method: :patch, class: "inline" do |f| %>
+              <%= f.select :status,
+                    Task::STATUSES.map { |s| [s.capitalize, s] },
+                    {},
+                    onchange: "this.form.requestSubmit()",
+                    class: "text-xs font-medium px-2 py-1 rounded-full border-none cursor-pointer #{status_badge_class(@task.status)}" %>
+            <% end %>
+          <% else %>
+            <span class="text-xs font-medium px-2 py-1 rounded-full <%= status_badge_class(@task.status) %>"><%= @task.status.capitalize %></span>
+          <% end %>
+        <% end %>
+      </dd>
+    </div>
+  </dl>
+</div>
