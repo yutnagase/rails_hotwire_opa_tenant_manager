@@ -1,29 +1,28 @@
-<%= form_with model: [project, task] do |f| %>
+<%= form_with model: [project, task], class: "space-y-5" do |f| %>
   <% if task.errors.any? %>
-    <div style="color: red; margin-bottom: 10px;">
+    <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-md">
       <% task.errors.full_messages.each do |msg| %>
-        <p><%= msg %></p>
+        <p class="text-sm text-red-700"><%= msg %></p>
       <% end %>
     </div>
   <% end %>
 
-  <div style="margin-bottom: 10px;">
-    <%= f.label :name, style: "display: block; font-weight: bold;" %>
-    <%= f.text_field :name, style: "width: 100%; padding: 6px;" %>
+  <div>
+    <%= f.label :name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
   </div>
 
-  <div style="margin-bottom: 10px;">
-    <%= f.label :status, style: "display: block; font-weight: bold;" %>
-    <%= f.select :status, Task::STATUSES.map { |s| [s.capitalize, s] }, {}, style: "padding: 6px;" %>
+  <div>
+    <%= f.label :user_id, "Assignee", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :user_id, User.order(:name).map { |u| [u.name, u.id] }, { include_blank: "Unassigned" }, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
   </div>
 
-  <div style="margin-bottom: 10px;">
-    <%= f.label :user_id, "Assignee", style: "display: block; font-weight: bold;" %>
-    <%= f.select :user_id,
-          User.order(:name).map { |u| [u.name, u.id] },
-          { include_blank: "Unassigned" },
-          style: "padding: 6px;" %>
+  <div>
+    <%= f.label :status, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :status, Task::STATUSES.map { |s| [s.capitalize, s] }, {}, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" %>
   </div>
 
-  <%= f.submit style: "padding: 8px 16px;" %>
+  <div>
+    <%= f.submit class: "w-full px-4 py-2 bg-indigo-600 text-white font-medium text-sm rounded-md hover:bg-indigo-700 transition cursor-pointer" %>
+  </div>
 <% end %>

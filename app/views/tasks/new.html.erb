@@ -1,4 +1,14 @@
-<h2>New Task</h2>
-<p><%= link_to "← Back to Tasks", project_tasks_path(@project) %></p>
-
-<%= render "form", task: @task, project: @project %>
+<div class="max-w-lg">
+  <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-bold text-gray-800">
+        <%= link_to @project.name, project_tasks_path(@project), class: "text-gray-500 hover:text-indigo-600 transition" %>
+        <span class="text-gray-300 mx-1">&gt;</span>
+        New Task
+      </h2>
+    </div>
+    <div class="px-6 py-6">
+      <%= render "form", task: @task, project: @project %>
+    </div>
+  </div>
+</div>
