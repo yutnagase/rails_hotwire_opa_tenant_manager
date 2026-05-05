@@ -36,11 +36,18 @@
       <% if user_signed_in? %>
         <aside class="w-56 bg-white border-r border-gray-200 px-4 py-6 flex-shrink-0">
           <nav class="space-y-1">
-            <%= link_to projects_path, class: "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md #{request.path.start_with?('/projects') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <%= link_to projects_path, class: "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md #{request.path == '/projects' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'}" do %>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
               Projects
             <% end %>
-            <%= link_to admin_users_path, class: "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md #{request.path.start_with?('/admin/users') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'}" do %>
+            <% if @sidebar_projects&.any? %>
+              <div class="ml-6 space-y-0.5">
+                <% @sidebar_projects.each do |project| %>
+                  <%= link_to project.name, project_tasks_path(project), class: "block px-3 py-1.5 text-sm rounded-md truncate #{request.path.start_with?("/projects/#{project.id}") ? 'text-indigo-700 bg-indigo-50 font-medium' : 'text-gray-600 hover:bg-gray-50'}" %>
+                <% end %>
+              </div>
+            <% end %>
+            <%= link_to admin_users_path, class: "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md mt-4 #{request.path.start_with?('/admin/users') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'}" do %>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
               Users
             <% end %>
