@@ -1,45 +1,43 @@
-<h2>Projects</h2>
-
-<% if can?("create", "project") %>
-  <p><%= link_to "+ New Project", new_project_path %></p>
-<% end %>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-xl font-bold text-gray-800">Projects</h2>
+  <% if can?("create", "project") %>
+    <%= link_to new_project_path, class: "inline-flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      New Project
+    <% end %>
+  <% end %>
+</div>
 
 <% if @projects.any? %>
-  <table style="width: 100%; border-collapse: collapse;">
-    <thead>
-      <tr style="border-bottom: 2px solid #333;">
-        <th style="text-align: left; padding: 8px;">Name</th>
-        <th style="text-align: right; padding: 8px;">Tasks</th>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <% @projects.each do |project| %>
+      <div class="group relative bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md hover:border-indigo-200 transition cursor-pointer" onclick="window.location='<%= project_tasks_path(project) %>'">
+        <div>
+          <p class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition"><%= project.name %></p>
+          <p class="text-sm text-gray-500 mt-1"><%= project.tasks.count %> tasks</p>
+        </div>
         <% if can?("update", "project") || can?("delete", "project") %>
-          <th style="text-align: right; padding: 8px;">Actions</th>
-        <% end %>
-      </tr>
-    </thead>
-    <tbody>
-      <% @projects.each do |project| %>
-        <tr style="border-bottom: 1px solid #ddd;">
-          <td style="padding: 8px;">
-            <%= link_to project.name, project_tasks_path(project) %>
-          </td>
-          <td style="text-align: right; padding: 8px;">
-            <%= project.tasks.count %>
-          </td>
-          <% if can?("update", "project") || can?("delete", "project") %>
-            <td style="text-align: right; padding: 8px;">
+          <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition" data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" onclick="event.stopPropagation()" class="p-1 rounded-md hover:bg-gray-100 cursor-pointer bg-transparent border-none text-gray-400 hover:text-gray-600">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>
+            </button>
+            <div data-dropdown-target="menu" class="hidden absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
               <% if can?("update", "project") %>
-                <%= link_to "Edit", edit_project_path(project) %>
+                <%= link_to "Edit", edit_project_path(project), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50", onclick: "event.stopPropagation()" %>
               <% end %>
               <% if can?("delete", "project") %>
-                <%= button_to "Delete", project_path(project), method: :delete,
-                      data: { turbo_confirm: "Are you sure?" },
-                      style: "background: none; border: none; color: red; cursor: pointer; padding: 0;" %>
+                <%= button_to project_path(project), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 bg-transparent border-none cursor-pointer", form: { onclick: "event.stopPropagation()" } do %>
+                  Delete
+                <% end %>
               <% end %>
-            </td>
-          <% end %>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
 <% else %>
-  <p>No projects yet.</p>
+  <div class="text-center py-12 text-gray-500">
+    <p>No projects yet.</p>
+  </div>
 <% end %>

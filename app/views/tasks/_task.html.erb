@@ -1,22 +1,22 @@
 <%= turbo_frame_tag dom_id(task) do %>
-  <tr style="border-bottom: 1px solid #ddd;">
-    <td style="padding: 8px;">
-      <%= link_to task.name, project_task_path(project, task), data: { turbo_frame: "_top" } %>
+  <tr class="hover:bg-gray-50 transition even:bg-gray-50/50">
+    <td class="px-4 py-3 text-sm">
+      <%= link_to task.name, project_task_path(project, task), data: { turbo_frame: "_top" }, class: "text-gray-900 font-medium hover:text-indigo-600 transition" %>
     </td>
-    <td style="padding: 8px;">
+    <td class="px-4 py-3 text-sm text-gray-600">
       <%= task.user&.name || "Unassigned" %>
     </td>
-    <td style="padding: 8px;">
+    <td class="px-4 py-3 text-sm">
       <% if can?("update", "task") %>
-        <%= form_with model: [project, task], method: :patch do |f| %>
+        <%= form_with model: [project, task], method: :patch, class: "inline" do |f| %>
           <%= f.select :status,
                 Task::STATUSES.map { |s| [s.capitalize, s] },
                 {},
                 onchange: "this.form.requestSubmit()",
-                style: "padding: 4px;" %>
+                class: "text-xs font-medium px-2 py-1 rounded-full border-none cursor-pointer #{status_badge_class(task.status)}" %>
         <% end %>
       <% else %>
-        <%= task.status.capitalize %>
+        <span class="text-xs font-medium px-2 py-1 rounded-full <%= status_badge_class(task.status) %>"><%= task.status.capitalize %></span>
       <% end %>
     </td>
   </tr>
