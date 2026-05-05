@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   around_action :scope_to_tenant
   before_action :authenticate_user!
   before_action :authorize_with_opa
+  before_action :set_sidebar_projects
 
   private
 
@@ -43,6 +44,10 @@ class ApplicationController < ActionController::Base
     unless OpaClient.allowed?(user: current_user, action: opa_action, resource: resource)
       head :forbidden
     end
+  end
+
+  def set_sidebar_projects
+    @sidebar_projects = Project.all if user_signed_in?
   end
 
   def opa_action_for(action)
