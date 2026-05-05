@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Tenant Manager" %></title>
+    <title><%= content_for(:title) || "TaskFlow" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -9,27 +9,50 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="font-sans bg-gray-50 text-gray-900 min-h-screen">
-    <header class="bg-white border-b border-gray-200 shadow-sm">
-      <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-        <h1 class="text-lg font-semibold">
-          <%= link_to "Tenant Manager", root_path, class: "text-gray-900 hover:text-indigo-600 no-underline transition" %>
+  <body class="font-sans bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+      <div class="px-6 py-3 flex justify-between items-center">
+        <h1 class="text-lg font-bold tracking-tight">
+          <%= link_to "TaskFlow", root_path, class: "text-indigo-600 no-underline" %>
         </h1>
         <% if user_signed_in? %>
-          <nav class="flex items-center gap-4 text-sm text-gray-600">
-            <span class="text-gray-500"><%= current_user.name %> (<%= current_user.role %>)</span>
-            <%= link_to "Projects", projects_path, class: "hover:text-indigo-600 transition" %>
-            <%= link_to "Users", admin_users_path, class: "hover:text-indigo-600 transition" %>
-            <%= link_to "Settings", settings_path, class: "hover:text-indigo-600 transition" %>
-            <%= button_to "Sign out", destroy_user_session_path, method: :delete, data: { turbo: false }, class: "text-gray-600 hover:text-red-600 transition cursor-pointer bg-transparent border-none text-sm" %>
-          </nav>
+          <div class="relative" data-controller="dropdown">
+            <button data-action="click->dropdown#toggle" class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 cursor-pointer bg-transparent border-none">
+              <span class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-xs"><%= current_user.name[0].upcase %></span>
+              <span><%= current_user.name %></span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div data-dropdown-target="menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
+              <div class="px-4 py-2 text-xs text-gray-500 border-b border-gray-100"><%= current_user.role %></div>
+              <%= link_to "Settings", settings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
+              <%= button_to "Sign out", destroy_user_session_path, method: :delete, data: { turbo: false }, class: "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 bg-transparent border-none cursor-pointer" %>
+            </div>
+          </div>
         <% end %>
       </div>
     </header>
-    <main class="max-w-5xl mx-auto px-6 py-8">
-      <% if notice %><p class="mb-4 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded"><%= notice %></p><% end %>
-      <% if alert %><p class="mb-4 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded"><%= alert %></p><% end %>
-      <%= yield %>
-    </main>
+
+    <div class="flex flex-1">
+      <% if user_signed_in? %>
+        <aside class="w-56 bg-white border-r border-gray-200 px-4 py-6 flex-shrink-0">
+          <nav class="space-y-1">
+            <%= link_to projects_path, class: "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md #{request.path.start_with?('/projects') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'}" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              Projects
+            <% end %>
+            <%= link_to admin_users_path, class: "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md #{request.path.start_with?('/admin/users') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'}" do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              Users
+            <% end %>
+          </nav>
+        </aside>
+      <% end %>
+
+      <main class="flex-1 px-8 py-8">
+        <% if notice %><p class="mb-4 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded text-sm"><%= notice %></p><% end %>
+        <% if alert %><p class="mb-4 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded text-sm"><%= alert %></p><% end %>
+        <%= yield %>
+      </main>
+    </div>
   </body>
 </html>
