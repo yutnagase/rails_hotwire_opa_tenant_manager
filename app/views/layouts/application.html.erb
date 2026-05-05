@@ -5,26 +5,31 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body style="font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
-    <header style="border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-      <h1 style="font-size: 1.2rem; margin: 0;">
-        <%= link_to "Tenant Manager", root_path, style: "text-decoration: none; color: inherit;" %>
-      </h1>
-      <% if user_signed_in? %>
-        <nav style="font-size: 0.85rem;">
-          <%= current_user.name %> (<%= current_user.role %>)
-          | <%= link_to "Projects", projects_path %>
-          | <%= link_to "Users", admin_users_path %>
-          | <%= link_to "Settings", settings_path %>
-          | <%= button_to "Sign out", destroy_user_session_path, method: :delete, data: { turbo: false } %>
-        </nav>
-      <% end %>
+  <body class="font-sans bg-gray-50 text-gray-900 min-h-screen">
+    <header class="bg-white border-b border-gray-200 shadow-sm">
+      <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 class="text-lg font-semibold">
+          <%= link_to "Tenant Manager", root_path, class: "text-gray-900 hover:text-indigo-600 no-underline transition" %>
+        </h1>
+        <% if user_signed_in? %>
+          <nav class="flex items-center gap-4 text-sm text-gray-600">
+            <span class="text-gray-500"><%= current_user.name %> (<%= current_user.role %>)</span>
+            <%= link_to "Projects", projects_path, class: "hover:text-indigo-600 transition" %>
+            <%= link_to "Users", admin_users_path, class: "hover:text-indigo-600 transition" %>
+            <%= link_to "Settings", settings_path, class: "hover:text-indigo-600 transition" %>
+            <%= button_to "Sign out", destroy_user_session_path, method: :delete, data: { turbo: false }, class: "text-gray-600 hover:text-red-600 transition cursor-pointer bg-transparent border-none text-sm" %>
+          </nav>
+        <% end %>
+      </div>
     </header>
-    <% if notice %><p style="color: green;"><%= notice %></p><% end %>
-    <% if alert %><p style="color: red;"><%= alert %></p><% end %>
-    <%= yield %>
+    <main class="max-w-5xl mx-auto px-6 py-8">
+      <% if notice %><p class="mb-4 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded"><%= notice %></p><% end %>
+      <% if alert %><p class="mb-4 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded"><%= alert %></p><% end %>
+      <%= yield %>
+    </main>
   </body>
 </html>
